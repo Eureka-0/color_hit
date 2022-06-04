@@ -62,9 +62,10 @@ class GameView:
 
     def init_level(self):
         self.colors = get_ordered_colors(self.level)
+        self.pin = Pin(self.screen, self.colors[-1])
         self.disc = Disc(self.screen, self.colors)
         self.bullets = Bullets(self.screen, self.colors)
-        self.pin = Pin(self.screen, self.colors.pop())
+        self.colors.pop()
 
     def on_keydown(self, event):
         if event.key == pg.K_SPACE and self.pin.mode == STILL:
