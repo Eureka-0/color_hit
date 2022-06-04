@@ -26,11 +26,11 @@ def rotate(
     img: pg.surface.Surface, angle: float, relative_pos: tuple[float, float]
 ) -> tuple[pg.surface.Surface, pg.rect.Rect]:
     rect = img.get_rect(
-        topleft=(CENTER_X - relative_pos[0], CENTER_Y - relative_pos[1])
+        topleft=(CENTER[0] - relative_pos[0], CENTER[1] - relative_pos[1])
     )
-    offset = pg.math.Vector2(CENTER_X - rect.centerx, CENTER_Y - rect.centery)
+    offset = pg.math.Vector2(CENTER[0] - rect.centerx, CENTER[1] - rect.centery)
     rotated_offset = offset.rotate(angle)
-    rotated_center = (CENTER_X - rotated_offset.x, CENTER_Y - rotated_offset.y)
+    rotated_center = (CENTER[0] - rotated_offset.x, CENTER[1] - rotated_offset.y)
     rotated_img = pg.transform.rotate(img, -angle)
     rotated_rect = rotated_img.get_rect(center=rotated_center)
     return rotated_img, rotated_rect
@@ -43,7 +43,7 @@ class Pie(Sprite):
         self.color = color
         self.origin_image = self.get_image(start_degree, degree_range)
         self.image: pg.surface.Surface = self.origin_image.copy()
-        self.rect: pg.rect.Rect = self.image.get_rect(center=(CENTER_X, CENTER_Y))
+        self.rect: pg.rect.Rect = self.image.get_rect(center=CENTER)
         self.angle = 0
 
     def get_image(self, start_degree, degree_range):

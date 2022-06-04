@@ -36,7 +36,7 @@ def run_game():
         screen.fill(background)
         view.update()
         pg.display.update()
-        clock.tick(100)
+        clock.tick(FPS)
 
     pg.quit()
     sys.exit()
