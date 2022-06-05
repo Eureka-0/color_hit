@@ -1,4 +1,3 @@
-import sys
 import os
 
 import pygame as pg
@@ -6,24 +5,27 @@ import pygame as pg
 from config import *
 from views import GameView
 
-background = "#717171"
+
+def get_back():
+    background = pg.image.load(os.path.join("img", "background.png")).convert_alpha()
+    return pg.transform.smoothscale(background, WINDOW_SIZE)
 
 
 def run_game():
     pg.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
-    screen = pg.display.set_mode((WIDTH, HEIGHT))
+    screen = pg.display.set_mode(WINDOW_SIZE)
+    background = get_back()
     pg.display.set_caption("Color Hit")
     pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN])
     view = GameView(screen)
     clock = pg.time.Clock()
     run = True
-    frame = 0
+    frame = 0  # 记录帧数
 
     while run:
-        # frame += 1
-        # if frame % 40 == 0:
-        #     view.pin.mode = SHOOT
+        clock.tick(FPS)
+        frame += 1
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -33,13 +35,11 @@ def run_game():
             elif event.type == pg.MOUSEBUTTONDOWN:
                 view.on_mousedown(event)
 
-        screen.fill(background)
+        screen.blit(background, (0, 0))
         view.update()
         pg.display.update()
-        clock.tick(FPS)
 
     pg.quit()
-    sys.exit()
 
 
 if __name__ == "__main__":

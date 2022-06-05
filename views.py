@@ -57,7 +57,7 @@ def get_ordered_colors(level: int) -> list[str]:
 class GameView:
     def __init__(self, screen):
         self.screen = screen
-        self.level = 8
+        self.level = 1
         self.init_level()
 
     def init_level(self):
@@ -92,7 +92,7 @@ class GameView:
         return widgets
 
     def update(self):
-        if self.pin.rect.top >= HEIGHT:
+        if self.pin.rect.top >= WINDOW_SIZE[1]:
             self.next_pin()
 
         collision = pg.sprite.spritecollideany(self.pin, self.disc, collide_mask)
