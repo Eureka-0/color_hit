@@ -6,13 +6,13 @@ FPS = 100  # 游戏帧率
 
 # 组件尺寸，单位为像素
 WINDOW_SIZE = Vector2(700, 700)  # 主窗口大小
-PIN_SIZE = Vector2(20, 80)  # 飞镖大小
+PIN_SIZE = Vector2(35, 100)  # 飞镖大小
 MARGINAL_WIDTH = 3  # 飞镖圆形头部边缘宽度
-PRICK_DEPTH = 30  # 飞镖扎入深度
+PRICK_DEPTH = 50  # 飞镖扎入深度
 BULLETS_POS = Vector2(50, 500)  # 剩余飞镖的显示位置
 BULLET_SIZE = Vector2(20, 4)  # 剩余飞镖显示大小
 CENTER = Vector2(350, 260)  # color disc 圆心位置
-RADIUS = 100  # color disc 半径
+RADIUS = 120  # color disc 半径
 
 
 # 圆盘与飞镖颜色
