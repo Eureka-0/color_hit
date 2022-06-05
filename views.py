@@ -5,12 +5,13 @@ from typing import Union
 import pygame as pg
 from pygame.event import Event
 from pygame.sprite import Group, Sprite
+from pygame.surface import Surface
 
 from config import *
 from widgets import Bullets, Disc, Pie, Pin
 
 
-def collide_mask(sprite1, sprite2):
+def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
     return True if pg.sprite.collide_mask(sprite1, sprite2) else False
 
 
@@ -68,7 +69,7 @@ def get_ordered_colors(level: int) -> list[str]:
 
 
 class GameView:
-    def __init__(self, screen):
+    def __init__(self, screen: Surface):
         self.screen = screen
         self.level = 1
         self.init_level()

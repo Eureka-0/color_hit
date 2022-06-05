@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 import pygame as pg
 from PIL import Image, ImageDraw
@@ -10,7 +11,7 @@ from pygame.surface import Surface
 from config import *
 
 
-def draw_border(screen, rect: Rect):
+def draw_border(screen: Surface, rect: Rect):
     pg.draw.rect(screen, (255, 0, 0), rect, width=2)
 
 
@@ -19,10 +20,11 @@ def plus_angle(angle: float) -> float:
     return angle - 360 if angle > 360 else angle
 
 
-def pil2pg(pilimg: Image.Image) -> Surface:
+def pil2pg(pilimg: Image.Image, size: Union[Vector2, tuple[float, float]]) -> Surface:
     raw = pilimg.tobytes("raw", "RGBA")
-    size = pilimg.size
-    return pg.image.fromstring(raw, size, "RGBA").convert_alpha()  # type: ignore
+    imgsize = pilimg.size
+    pgimg = pg.image.fromstring(raw, imgsize, "RGBA").convert_alpha()  # type: ignore
+    return pg.transform.smoothscale(pgimg, size)
 
 
 def rotate(
@@ -32,29 +34,31 @@ def rotate(
     offset = pos - Vector2(rect.center)
     rotated_offset = offset.rotate(angle)
     rotated_center = pos - rotated_offset
-    rotated_img = pg.transform.rotate(img, -angle)
+    rotated_img = pg.transform.rotozoom(img, -angle, 1)
     rotated_rect = rotated_img.get_rect(center=rotated_center)
     return rotated_img, rotated_rect
 
 
 class Pie(Sprite):
-    def __init__(self, screen, color, start_degree, degree_range):
+    def __init__(
+        self, screen: Surface, color: str, start_degree: float, degree_range: float
+    ):
         super().__init__()
         self.screen = screen
         self.color = color
         self.origin_image = self.get_image(start_degree, degree_range)
         self.image: Surface = self.origin_image.copy()
         self.rect: Rect = self.image.get_rect(center=CENTER)
-        self.angle = 0
+        self.angle: float = 0
 
-    def get_image(self, start_degree, degree_range):
-        size = (2000, 2000)
+    def get_image(self, start_degree: float, degree_range: float) -> Surface:
+        size = (2200, 2200)
         image = Image.new("RGBA", size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
-        xy = ((0.0, 0.0), size)
+        xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
         end = start_degree + degree_range
         draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        return pg.transform.smoothscale(pil2pg(image), (2 * RADIUS, 2 * RADIUS))
+        return pil2pg(image, (2 * RADIUS, 2 * RADIUS))
 
     def update(self):
         self.angle = plus_angle(self.angle)
@@ -66,7 +70,7 @@ class Pie(Sprite):
 
 
 class Pin(Sprite):
-    def __init__(self, screen, color):
+    def __init__(self, screen: Surface, color: str):
         super().__init__()
         self.screen = screen
         self.color = color
@@ -76,16 +80,22 @@ class Pin(Sprite):
             centerx=WINDOW_SIZE[0] // 2, bottom=WINDOW_SIZE[1] - 20
         )
         self.mode = STILL
-        self.angle = 0
+        self.angle: float = 0
 
-    def get_image(self):
+    def get_image(self) -> Surface:
         image = Image.open(os.path.join("img", "pin.png"))
         draw = ImageDraw.Draw(image)
-        size = image.size
-        w = MARGINAL_WIDTH * size[0] / 20
-        xy = (w, size[1] - size[0] + w, size[0] - w, size[1] - w)
+        imgsize = image.size
+        size = (450, 1800)
+        w = MARGINAL_WIDTH * imgsize[0] / PIN_SIZE[0]
+        xy = (
+            w + 125,
+            imgsize[1] - 100 - size[0] + w,
+            imgsize[0] - 125 - w,
+            imgsize[1] - 100 - w,
+        )
         draw.ellipse(xy, fill=self.color)
-        return pg.transform.smoothscale(pil2pg(image), PIN_SIZE)
+        return pil2pg(image, PIN_SIZE)
 
     def update(self):
         if self.mode == SHOOT:
@@ -104,13 +114,13 @@ class Pin(Sprite):
 
 
 class Disc(Group):
-    def __init__(self, screen, colors: list):
+    def __init__(self, screen: Surface, colors: list):
         self.screen = screen
         self.sector_num = len(set(colors))
         self.colors = list(set(colors))
         super().__init__(*self.generate_pies())
 
-    def generate_pies(self):
+    def generate_pies(self) -> list[Pie]:
         sector_degree = 360 / len(self.colors)
         pies = []
         for i in range(self.sector_num):
@@ -132,7 +142,7 @@ class Disc(Group):
 
 
 class _Bullet(Sprite):
-    def __init__(self, screen, color, pos):
+    def __init__(self, screen: Surface, color: str, pos: tuple[float, float]):
         super().__init__()
         self.screen = screen
         self.color = color
@@ -143,7 +153,7 @@ class _Bullet(Sprite):
 
 
 class Bullets(Group):
-    def __init__(self, screen, colors):
+    def __init__(self, screen: Surface, colors: list[str]):
         self.screen = screen
         self.colors = colors
         self.number = len(colors)
