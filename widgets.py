@@ -1,13 +1,16 @@
 import os
-from PIL import Image, ImageDraw
 
 import pygame as pg
+from PIL import Image, ImageDraw
+from pygame.math import Vector2
+from pygame.rect import Rect
 from pygame.sprite import Group, Sprite
+from pygame.surface import Surface
 
 from config import *
 
 
-def draw_border(screen, rect: pg.rect.Rect):
+def draw_border(screen, rect: Rect):
     pg.draw.rect(screen, (255, 0, 0), rect, width=2)
 
 
@@ -16,21 +19,19 @@ def plus_angle(angle: float) -> float:
     return angle - 360 if angle > 360 else angle
 
 
-def pil2pg(pilimg: Image.Image) -> pg.surface.Surface:
+def pil2pg(pilimg: Image.Image) -> Surface:
     raw = pilimg.tobytes("raw", "RGBA")
     size = pilimg.size
     return pg.image.fromstring(raw, size, "RGBA").convert_alpha()  # type: ignore
 
 
 def rotate(
-    img: pg.surface.Surface, angle: float, relative_pos: tuple[float, float]
-) -> tuple[pg.surface.Surface, pg.rect.Rect]:
-    rect = img.get_rect(
-        topleft=(CENTER[0] - relative_pos[0], CENTER[1] - relative_pos[1])
-    )
-    offset = pg.math.Vector2(CENTER[0] - rect.centerx, CENTER[1] - rect.centery)
+    img: Surface, angle: float, pos: Vector2, relative_pos: Vector2
+) -> tuple[Surface, Rect]:
+    rect = img.get_rect(topleft=pos - relative_pos)
+    offset = pos - Vector2(rect.center)
     rotated_offset = offset.rotate(angle)
-    rotated_center = (CENTER[0] - rotated_offset.x, CENTER[1] - rotated_offset.y)
+    rotated_center = pos - rotated_offset
     rotated_img = pg.transform.rotate(img, -angle)
     rotated_rect = rotated_img.get_rect(center=rotated_center)
     return rotated_img, rotated_rect
@@ -42,8 +43,8 @@ class Pie(Sprite):
         self.screen = screen
         self.color = color
         self.origin_image = self.get_image(start_degree, degree_range)
-        self.image: pg.surface.Surface = self.origin_image.copy()
-        self.rect: pg.rect.Rect = self.image.get_rect(center=CENTER)
+        self.image: Surface = self.origin_image.copy()
+        self.rect: Rect = self.image.get_rect(center=CENTER)
         self.angle = 0
 
     def get_image(self, start_degree, degree_range):
@@ -53,11 +54,13 @@ class Pie(Sprite):
         xy = ((0.0, 0.0), size)
         end = start_degree + degree_range
         draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        return pil2pg(image.resize((2 * RADIUS, 2 * RADIUS)))
+        return pg.transform.smoothscale(pil2pg(image), (2 * RADIUS, 2 * RADIUS))
 
     def update(self):
         self.angle = plus_angle(self.angle)
-        self.image, self.rect = rotate(self.origin_image, self.angle, (RADIUS, RADIUS))
+        self.image, self.rect = rotate(
+            self.origin_image, self.angle, CENTER, Vector2(RADIUS, RADIUS)
+        )
 
         self.screen.blit(self.image, self.rect)
 
@@ -68,9 +71,9 @@ class Pin(Sprite):
         self.screen = screen
         self.color = color
         self.origin_image = self.get_image()
-        self.image: pg.surface.Surface = self.origin_image.copy()
-        self.rect: pg.rect.Rect = self.image.get_rect(
-            centerx=WIDTH // 2, bottom=HEIGHT - 20
+        self.image: Surface = self.origin_image.copy()
+        self.rect: Rect = self.image.get_rect(
+            centerx=WINDOW_SIZE[0] // 2, bottom=WINDOW_SIZE[1] - 20
         )
         self.mode = STILL
         self.angle = 0
@@ -82,16 +85,16 @@ class Pin(Sprite):
         w = MARGINAL_WIDTH * size[0] / 20
         xy = (w, size[1] - size[0] + w, size[0] - w, size[1] - w)
         draw.ellipse(xy, fill=self.color)
-        return pil2pg(image.resize((PIN_WIDTH, PIN_HEIGHT)))
+        return pg.transform.smoothscale(pil2pg(image), PIN_SIZE)
 
     def update(self):
         if self.mode == SHOOT:
             self.rect.centery -= SHOOT_SPEED
         elif self.mode == PRICK:
             self.angle = plus_angle(self.angle)
-            radius = RADIUS - PRICK_DEPTH
+            relative_pos = Vector2(PIN_SIZE[0] / 2, PRICK_DEPTH - RADIUS)
             self.image, self.rect = rotate(
-                self.origin_image, self.angle, (PIN_WIDTH / 2, -radius)
+                self.origin_image, self.angle, CENTER, relative_pos
             )
         elif self.mode == DROP:
             self.rect.centery += DROP_SPEED
@@ -113,8 +116,7 @@ class Disc(Group):
         for i in range(self.sector_num):
             color = self.colors[i]
             start_degree = i * sector_degree
-            pie = Pie(self.screen, color, start_degree, sector_degree)
-            pies.append(pie)
+            pies.append(Pie(self.screen, color, start_degree, sector_degree))
         return pies
 
     def update(self):
@@ -134,7 +136,7 @@ class _Bullet(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.rect: pg.rect.Rect = pg.Rect(pos[0], pos[1], BULLET_WIDTH, BULLET_HEIGHT)
+        self.rect: Rect = pg.Rect(pos[0], pos[1], BULLET_SIZE[0], BULLET_SIZE[1])
 
     def update(self):
         pg.draw.rect(self.screen, self.color, self.rect)
@@ -147,12 +149,12 @@ class Bullets(Group):
         self.number = len(colors)
         bullets = []
         for i, color in enumerate(self.colors):
-            pos = (BULLETS_POS[0], BULLETS_POS[1] - 3 * i * BULLET_HEIGHT)
+            pos = (BULLETS_POS[0], BULLETS_POS[1] - 3 * i * BULLET_SIZE[1])
             bullets.append(_Bullet(self.screen, color, pos))
         super().__init__(*bullets)
 
     def update(self):
-        if self.number < len(self.sprites()):
+        if self.number < len(self.sprites()) and len(self.sprites()):
             self.remove(self.sprites()[-1])
         for bullet in self.sprites():
             bullet.update()
