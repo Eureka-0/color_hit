@@ -1,12 +1,9 @@
-import os
-from typing import Union
+from os.path import join as pjoin
+from typing import Callable
 
 import pygame as pg
+import pygame.font as pf
 from PIL import Image, ImageDraw
-from pygame.math import Vector2
-from pygame.rect import Rect
-from pygame.sprite import Group, Sprite
-from pygame.surface import Surface
 
 from config import *
 
@@ -20,7 +17,7 @@ def plus_angle(angle: float) -> float:
     return angle - 360 if angle > 360 else angle
 
 
-def pil2pg(pilimg: Image.Image, size: Union[Vector2, tuple[float, float]]) -> Surface:
+def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
     raw = pilimg.tobytes("raw", "RGBA")
     imgsize = pilimg.size
     pgimg = pg.image.fromstring(raw, imgsize, "RGBA").convert_alpha()  # type: ignore
@@ -39,34 +36,173 @@ def rotate(
     return rotated_img, rotated_rect
 
 
-class Pie(Sprite):
+class _Content:
+    def __init__(self, screen: Surface, rect: Rect, text: str, img_name: str):
+        self.screen = screen
+        self.rect = rect
+        self.text = text
+        self.img_name = img_name
+
+    def load_image(self):
+        if len(self.img_name):
+            self.image = pg.image.load(pjoin("img", self.img_name))
+            self.image_rect = self.image.get_rect(center=self.rect.center)
+        else:
+            self.image = None
+
+    def render_text(self):
+        if len(self.text):
+            self.text_image = self.font.render(self.text, True, self.fontcolor)
+            self.text_rect = self.text_image.get_rect(center=self.rect.center)
+        else:
+            self.text_image = None
+
+    def set_style(self, font: str, fontsize: int, fontcolor: str, img_size: Vect2):
+        self.font = pf.Font(pjoin("font", f"{font}.TTF"), fontsize)
+        self.fontcolor = fontcolor
+        self.img_size = img_size
+        self.render_text()
+        self.load_image()
+
+    def update(self, text: Union[str, None], img_name: Union[str, None]):
+        if type(text) is str:
+            self.text = text
+            self.render_text()
+        if type(img_name) is str:
+            self.img_name = img_name
+            self.load_image()
+
+        if self.image:
+            self.screen.blit(self.image, self.image_rect)
+        if self.text_image:
+            self.screen.blit(self.text_image, self.text_rect)
+
+
+class _BasePanel(Sprite):
     def __init__(
-        self, screen: Surface, color: str, start_degree: float, degree_range: float
+        self,
+        screen: Surface,
+        pos: Vect2,
+        size: Vect2,
+        text: str,
+        img_name: str,
+        **style,
     ):
         super().__init__()
         self.screen = screen
-        self.color = color
-        self.origin_image = self.get_image(start_degree, degree_range)
-        self.image: Surface = self.origin_image.copy()
-        self.rect: Rect = self.image.get_rect(center=CENTER)
-        self.angle: float = 0
+        self.size = size
+        self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
+        self.content = _Content(screen, self.rect, text, img_name)
+        self.set_style(**style)
 
-    def get_image(self, start_degree: float, degree_range: float) -> Surface:
-        size = (2200, 2200)
-        image = Image.new("RGBA", size, (255, 255, 255, 0))
-        draw = ImageDraw.Draw(image)
-        xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
-        end = start_degree + degree_range
-        draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        return pil2pg(image, (2 * RADIUS, 2 * RADIUS))
+    def set_style(self, **style):
+        pass
 
-    def update(self):
-        self.angle = plus_angle(self.angle)
-        self.image, self.rect = rotate(
-            self.origin_image, self.angle, CENTER, Vector2(RADIUS, RADIUS)
-        )
+    def set_back(self, radius: float, color: str):
+        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(back_image)
+        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
+        draw.rounded_rectangle(xy, radius * 100, color)
+        self.back_image = pil2pg(back_image, self.size)
 
-        self.screen.blit(self.image, self.rect)
+    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
+        if self.back_image:
+            self.screen.blit(self.back_image, self.rect)
+        self.content.update(text, img_name)
+
+
+class Label(_BasePanel):
+    def __init__(
+        self,
+        screen: Surface,
+        pos: Vect2,
+        size: Vect2,
+        text: str = "",
+        img_name: str = "",
+        **style,
+    ):
+        super().__init__(screen, pos, size, text, img_name, **style)
+
+    def set_style(
+        self,
+        font: str = "MSYHMONO",
+        fontsize: int = 16,
+        fontcolor: str = B_WHITE,
+        radius: float = 0,
+        background: Union[str, None] = None,
+        img_size: Union[Vect2, None] = None,
+    ):
+        img_size = self.size if img_size is None else img_size
+        self.content.set_style(font, fontsize, fontcolor, img_size)
+        if background:
+            self.set_back(radius, background)
+        else:
+            self.back_image = None
+
+
+class Button(_BasePanel):
+    def __init__(
+        self,
+        screen: Surface,
+        pos: Vect2,
+        size: Vect2,
+        text: str = "",
+        img_name: str = "",
+        callback: Callable = lambda: 1,
+        **style,
+    ):
+        super().__init__(screen, pos, size, text, img_name, **style)
+        self.callback = callback
+
+    def set_style(
+        self,
+        radius: Union[float, None] = None,
+        background: Union[str, None] = B_GREEN,
+        hover_back: Union[str, None] = B_HOVER_GREEN,
+        font: str = "FZKATJW",
+        fontsize: int = 36,
+        fontcolor: str = B_WHITE,
+        img_size: Union[Vect2, None] = None,
+    ):
+        img_size = self.size if img_size is None else img_size
+        self.content.set_style(font, fontsize, fontcolor, img_size)
+        radius = min(self.size[:]) * 0.3 if radius is None else radius
+        if background:
+            self.set_back(radius, background)
+        else:
+            self.back_image = None
+
+        if hover_back:
+            self.set_hover_back(radius, hover_back)
+        else:
+            self.hover_back = None
+
+    def set_hover_back(self, radius: float, hover_color: str):
+        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(back_image)
+        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
+        draw.rounded_rectangle(xy, radius * 100, hover_color)
+        self.hover_back = pil2pg(back_image, self.size)
+
+    def check_mouse_pos(self, mouse_pos):
+        return True if self.rect.collidepoint(mouse_pos) else False
+
+    def check_click(self, event: Event):
+        if self.check_mouse_pos(event.pos):
+            self.callback()
+
+    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
+        background = self.back_image
+        if self.hover_back:
+            mouse_pos = pg.mouse.get_pos()
+            if self.check_mouse_pos(mouse_pos):
+                background = self.hover_back
+
+        if background:
+            self.screen.blit(background, self.rect)
+        self.content.update(text, img_name)
 
 
 class Pin(Sprite):
@@ -74,16 +210,15 @@ class Pin(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.origin_image = self.get_image()
-        self.image: Surface = self.origin_image.copy()
+        self.set_image()
         self.rect: Rect = self.image.get_rect(
             centerx=WINDOW_SIZE[0] // 2, bottom=WINDOW_SIZE[1] - 20
         )
         self.mode = STILL
         self.angle: float = 0
 
-    def get_image(self) -> Surface:
-        image = Image.open(os.path.join("img", "pin.png"))
+    def set_image(self):
+        image = Image.open(pjoin("img", "pin.png"))
         draw = ImageDraw.Draw(image)
         imgsize = image.size
         size = (450, 1800)
@@ -95,7 +230,8 @@ class Pin(Sprite):
             imgsize[1] - 100 - w,
         )
         draw.ellipse(xy, fill=self.color)
-        return pil2pg(image, PIN_SIZE)
+        self.origin_image = pil2pg(image, PIN_SIZE)
+        self.image: Surface = self.origin_image.copy()
 
     def update(self):
         if self.mode == SHOOT:
@@ -113,6 +249,36 @@ class Pin(Sprite):
         self.screen.blit(self.image, self.rect)
 
 
+class _Pie(Sprite):
+    def __init__(
+        self, screen: Surface, color: str, start_degree: float, degree_range: float
+    ):
+        super().__init__()
+        self.screen = screen
+        self.color = color
+        self.set_image(start_degree, degree_range)
+        self.rect: Rect = self.image.get_rect(center=CENTER)
+        self.angle: float = 0
+
+    def set_image(self, start_degree: float, degree_range: float):
+        size = (2200, 2200)
+        image = Image.new("RGBA", size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(image)
+        xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
+        end = start_degree + degree_range
+        draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
+        self.origin_image = pil2pg(image, (2 * RADIUS, 2 * RADIUS))
+        self.image: Surface = self.origin_image.copy()
+
+    def update(self):
+        self.angle = plus_angle(self.angle)
+        self.image, self.rect = rotate(
+            self.origin_image, self.angle, CENTER, Vector2(RADIUS, RADIUS)
+        )
+
+        self.screen.blit(self.image, self.rect)
+
+
 class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
         self.screen = screen
@@ -120,19 +286,19 @@ class Disc(Group):
         self.colors = list(set(colors))
         super().__init__(*self.generate_pies())
 
-    def generate_pies(self) -> list[Pie]:
+    def generate_pies(self) -> list[_Pie]:
         sector_degree = 360 / len(self.colors)
         pies = []
         for i in range(self.sector_num):
             color = self.colors[i]
             start_degree = i * sector_degree
-            pies.append(Pie(self.screen, color, start_degree, sector_degree))
+            pies.append(_Pie(self.screen, color, start_degree, sector_degree))
         return pies
 
     def update(self):
         sorted_sprites = []
         for spr in self.sprites():
-            if isinstance(spr, Pie):
+            if isinstance(spr, _Pie):
                 sorted_sprites.append(spr)
             else:
                 sorted_sprites.insert(0, spr)
@@ -146,7 +312,7 @@ class _Bullet(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.rect: Rect = pg.Rect(pos[0], pos[1], BULLET_SIZE[0], BULLET_SIZE[1])
+        self.rect: Rect = Rect(pos[0], pos[1], BULLET_SIZE[0], BULLET_SIZE[1])
 
     def update(self):
         pg.draw.rect(self.screen, self.color, self.rect)
