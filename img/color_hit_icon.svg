@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+[
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:layerName CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:mask CDATA #IMPLIED >
+<!ATTLIST text
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:width CDATA #IMPLIED >
+
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ENTITY % SVG.filter.extra.content  "| feDropShadow" >
+<!ELEMENT feDropShadow EMPTY>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  dx CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  dy CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  stdDeviation CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  flood-opacity CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  in CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  result CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  flood-color CDATA #IMPLIED>
+]
+>
+<!-- Created with Vectornator (http://vectornator.io/) -->
+<svg height="100%" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 1024 1024" width="100%" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs/>
+<g id="图层-1" vectornator:layerName="图层 1" visibility="hidden">
+<path d="M512 512L887 512L887 887L512 887L512 512Z" fill="none" fill-rule="evenodd" opacity="0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M137 512L512 512L512 887L137 887L137 512Z" fill="none" fill-rule="evenodd" opacity="0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M512 137L887 137L887 512L512 512L512 137Z" fill="none" fill-rule="evenodd" opacity="0" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M137 137L512 137L512 512L137 512L137 137Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M137 512C137 304.893 304.893 137 512 137C719.107 137 887 304.893 887 512C887 719.107 719.107 887 512 887C304.893 887 137 719.107 137 512Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M212 512C212 346.315 346.315 212 512 212C677.685 212 812 346.315 812 512C812 677.685 677.685 812 512 812C346.315 812 212 677.685 212 512Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M287 512C287 387.736 387.736 287 512 287C636.264 287 737 387.736 737 512C737 636.264 636.264 737 512 737C387.736 737 287 636.264 287 512Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M362 512C362 429.157 429.157 362 512 362C594.843 362 662 429.157 662 512C662 594.843 594.843 662 512 662C429.157 662 362 594.843 362 512Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+<path d="M437 512C437 470.579 470.579 437 512 437C553.421 437 587 470.579 587 512C587 553.421 553.421 587 512 587C470.579 587 437 553.421 437 512Z" fill="none" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+</g>
+<g id="图层-2" vectornator:layerName="图层 2">
+<path d="M137 512C137 304.893 304.893 137 512 137C719.107 137 887 304.893 887 512C887 719.107 719.107 887 512 887C304.893 887 137 719.107 137 512Z" fill="#ffffff" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M512 137C304.893 137 137 304.893 137 512L212 512C212 346.315 346.315 212 512 212L512 137ZM512 287C387.736 287 287 387.736 287 512L362 512C362 429.157 429.157 362 512 362L512 287ZM512 437C470.579 437 437 470.579 437 512L512 512L512 437Z" fill="#6bcb77" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M512 137L512 212C677.685 212 812 346.315 812 512L887 512C887 304.893 719.107 137 512 137ZM512 287L512 362C594.843 362 662 429.157 662 512L737 512C737 387.736 636.264 287 512 287ZM512 437L512 512L587 512C587 470.579 553.421 437 512 437Z" fill="#f32424" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M137 512C137 719.107 304.893 887 512 887L512 812C346.315 812 212 677.685 212 512L137 512ZM287 512C287 636.264 387.736 737 512 737L512 662C429.157 662 362 594.843 362 512L287 512ZM437 512C437 553.421 470.579 587 512 587L512 512L437 512Z" fill="#ff7700" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M512 512L512 587C553.421 587 587 553.421 587 512L512 512ZM662 512C662 594.843 594.843 662 512 662L512 737C636.264 737 737 636.264 737 512L662 512ZM812 512C812 677.685 677.685 812 512 812L512 887C719.107 887 887 719.107 887 512L812 512Z" fill="#3db2ff" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+<g id="图层-3" vectornator:layerName="图层 3">
+<path d="M231.844 231.843L160.499 231.852C153.763 231.853 147.454 228.548 143.62 223.009L96.3528 154.725C92.8929 149.726 96.4698 142.899 102.549 142.899L142.901 142.899L142.901 102.55C142.901 96.4699 149.73 92.8922 154.728 96.3536L223.003 143.63C228.54 147.464 231.843 153.77 231.843 160.505L231.843 231.843C231.843 231.843 231.844 231.843 231.844 231.843Z" fill="#6bcb77" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M495 495L411.665 425.349L425.349 411.665L495 495Z" fill="#afb9d2" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M396.047 430.257L430.256 396.047L445.44 416.295C448.505 420.38 448.098 426.098 444.487 429.709L429.707 444.488C426.095 448.1 420.378 448.506 416.293 445.441L396.047 430.257Z" fill="#c7cfe2" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M226.071 244.469L396.047 430.257L430.256 396.047L244.469 226.071L226.071 244.469Z" fill="#ffd782" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M430.256 396.047L396.047 430.257L403.873 436.126L436.125 403.873L430.256 396.047Z" fill="#afb9d2" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M223.026 206.463L112.26 105.125C110.264 103.299 107.183 103.367 105.27 105.281C103.357 107.195 103.288 110.275 105.114 112.271L206.452 223.037L226.065 244.474L244.463 226.076L223.026 206.463Z" fill="#3aac48" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M233.725 252.835C239.373 246.838 245.911 239.952 252.349 233.281L244.469 226.071L226.071 244.469L233.725 252.835Z" fill="#ffc36e" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+</svg>
