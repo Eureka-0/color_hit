@@ -1,39 +1,9 @@
-from os.path import join as pjoin
 from typing import Callable
 
-import pygame as pg
 import pygame.font as pf
 from PIL import Image, ImageDraw
 
-from config import *
-
-
-def draw_border(screen: Surface, rect: Rect):
-    pg.draw.rect(screen, (255, 0, 0), rect, width=2)
-
-
-def plus_angle(angle: float) -> float:
-    angle += ROTATION_SPEED
-    return angle - 360 if angle > 360 else angle
-
-
-def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
-    raw = pilimg.tobytes("raw", "RGBA")
-    imgsize = pilimg.size
-    pgimg = pg.image.fromstring(raw, imgsize, "RGBA").convert_alpha()  # type: ignore
-    return pg.transform.smoothscale(pgimg, size)
-
-
-def rotate(
-    img: Surface, angle: float, pos: Vector2, relative_pos: Vector2
-) -> tuple[Surface, Rect]:
-    rect = img.get_rect(topleft=pos - relative_pos)
-    offset = pos - Vector2(rect.center)
-    rotated_offset = offset.rotate(angle)
-    rotated_center = pos - rotated_offset
-    rotated_img = pg.transform.rotozoom(img, -angle, 1)
-    rotated_rect = rotated_img.get_rect(center=rotated_center)
-    return rotated_img, rotated_rect
+from utils import *
 
 
 class _Content:
@@ -45,7 +15,7 @@ class _Content:
 
     def load_image(self):
         if len(self.img_name):
-            self.image = pg.image.load(pjoin("img", self.img_name))
+            self.image = get_image(self.img_name, self.img_size)
             self.image_rect = self.image.get_rect(center=self.rect.center)
         else:
             self.image = None
@@ -186,7 +156,7 @@ class Button(_BasePanel):
         draw.rounded_rectangle(xy, radius * 100, hover_color)
         self.hover_back = pil2pg(back_image, self.size)
 
-    def check_mouse_pos(self, mouse_pos):
+    def check_mouse_pos(self, mouse_pos) -> bool:
         return True if self.rect.collidepoint(mouse_pos) else False
 
     def check_click(self, event: Event):
@@ -249,7 +219,7 @@ class Pin(Sprite):
         self.screen.blit(self.image, self.rect)
 
 
-class _Pie(Sprite):
+class Pie(Sprite):
     def __init__(
         self, screen: Surface, color: str, start_degree: float, degree_range: float
     ):
@@ -279,6 +249,16 @@ class _Pie(Sprite):
         self.screen.blit(self.image, self.rect)
 
 
+class Balk(Sprite):
+    def __init__(self):
+        pass
+
+
+class Bonus(Sprite):
+    def __init__(self):
+        pass
+
+
 class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
         self.screen = screen
@@ -286,19 +266,19 @@ class Disc(Group):
         self.colors = list(set(colors))
         super().__init__(*self.generate_pies())
 
-    def generate_pies(self) -> list[_Pie]:
+    def generate_pies(self) -> list[Pie]:
         sector_degree = 360 / len(self.colors)
         pies = []
         for i in range(self.sector_num):
             color = self.colors[i]
             start_degree = i * sector_degree
-            pies.append(_Pie(self.screen, color, start_degree, sector_degree))
+            pies.append(Pie(self.screen, color, start_degree, sector_degree))
         return pies
 
     def update(self):
         sorted_sprites = []
         for spr in self.sprites():
-            if isinstance(spr, _Pie):
+            if isinstance(spr, Pie):
                 sorted_sprites.append(spr)
             else:
                 sorted_sprites.insert(0, spr)

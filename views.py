@@ -1,68 +1,15 @@
-from functools import reduce
-from random import randint, sample, shuffle
-
-import pygame as pg
-
-from config import *
-from widgets import Bullets, Disc, Pin, _Pie
-
-
-def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
-    return True if pg.sprite.collide_mask(sprite1, sprite2) else False
+from widgets import *
 
 
 def hit_correct_color(pin: Pin, disc: Disc) -> Union[None, bool]:
     collision = pg.sprite.spritecollideany(pin, disc, collide_mask)
-    if isinstance(collision, _Pie):
+    if isinstance(collision, Pie):
         if pin.color == collision.color:
             return True
         else:
             return False
-    elif isinstance(collision, Pin):
+    elif isinstance(collision, (Pin, Balk)):
         return False
-
-
-def expand_colors(colors: list[str], num: list[int]) -> list[str]:
-    expand = reduce(list.__add__, [[color] * n for color, n in zip(colors, num)])
-    shuffle(expand)
-    return expand
-
-
-def rand_colors(num: int) -> list[str]:
-    if 1 <= num <= 4:
-        colors = list(COLORS)
-        shuffle(colors)
-        return colors[0:num]
-    else:
-        return ["#000000"]
-
-
-def rand_num(n: int) -> list[int]:
-    sam = [0] + sample(range(1, PIN_NUM), n - 1) + [PIN_NUM]
-    sam.sort()
-    num = [sam[i + 1] - sam[i] for i in range(n)]
-    upper = round(PIN_NUM / n) + 2
-    while max(num) > upper:
-        sam = [0] + sample(range(1, PIN_NUM), n - 1) + [PIN_NUM]
-        sam.sort()
-        num = [sam[i + 1] - sam[i] for i in range(n)]
-    return num
-
-
-def get_ordered_colors(level: int) -> list[str]:
-    if 1 <= level <= 2:
-        colors = rand_colors(1)
-        num = [randint(2 * level + 1, 2 * level + 3)]
-    elif 3 <= level <= 4:
-        colors = rand_colors(2)
-        num = rand_num(2)
-    elif 5 <= level <= 7:
-        colors = rand_colors(3)
-        num = rand_num(3)
-    else:
-        colors = rand_colors(4)
-        num = rand_num(4)
-    return expand_colors(colors, num)
 
 
 class GameView:

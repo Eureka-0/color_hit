@@ -1,6 +1,7 @@
 from typing import Union
 
 from PIL.Image import Image as PILImage
+from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import Event
 from pygame.math import Vector2
 from pygame.rect import Rect
