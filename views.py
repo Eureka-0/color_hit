@@ -1,14 +1,10 @@
 from functools import reduce
 from random import randint, sample, shuffle
-from typing import Union
 
 import pygame as pg
-from pygame.event import Event
-from pygame.sprite import Group, Sprite
-from pygame.surface import Surface
 
 from config import *
-from widgets import Bullets, Disc, Pie, Pin
+from widgets import Bullets, Disc, Pin, _Pie
 
 
 def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
@@ -17,7 +13,7 @@ def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
 
 def hit_correct_color(pin: Pin, disc: Disc) -> Union[None, bool]:
     collision = pg.sprite.spritecollideany(pin, disc, collide_mask)
-    if isinstance(collision, Pie):
+    if isinstance(collision, _Pie):
         if pin.color == collision.color:
             return True
         else:
@@ -34,8 +30,9 @@ def expand_colors(colors: list[str], num: list[int]) -> list[str]:
 
 def rand_colors(num: int) -> list[str]:
     if 1 <= num <= 4:
-        shuffle(COLORS)
-        return COLORS[0:num]
+        colors = list(COLORS)
+        shuffle(colors)
+        return colors[0:num]
     else:
         return ["#000000"]
 

@@ -1,4 +1,13 @@
+from typing import Union
+
+from PIL.Image import Image as PILImage
+from pygame.event import Event
 from pygame.math import Vector2
+from pygame.rect import Rect
+from pygame.sprite import Group, Sprite
+from pygame.surface import Surface
+
+Vect2 = Union[Vector2, tuple[float, float]]
 
 
 FPS = 100  # 游戏帧率
@@ -20,7 +29,13 @@ RED = "#F32424"
 GREEN = "#6BCB77"
 ORANGE = "#FF7700"
 BLUE = "#3DB2FF"
-COLORS = [RED, GREEN, ORANGE, BLUE]
+COLORS = (RED, GREEN, ORANGE, BLUE)
+
+
+# Button 背景及文字颜色
+B_GREEN = "#00b63e"
+B_HOVER_GREEN = "#058b30"
+B_WHITE = "#ffffff"
 
 
 # 飞镖的四种状态，静止、射击、扎入、掉落
