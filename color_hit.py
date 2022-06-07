@@ -3,7 +3,8 @@ import sys
 from math import cos, radians, sin
 from random import random
 
-from views import *
+from utils import *
+from views import Button, GameView, Label
 
 
 def get_back() -> tuple[Surface, Rect]:
@@ -20,15 +21,14 @@ def run_game():
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
     get_events = pg.event.get
-
     screen = pg.display.set_mode(WINDOW_SIZE)
     pg.display.set_caption("Color Hit")
+    clock = pg.time.Clock()
+
     background, back_rect = get_back()
     view = GameView(screen)
-    fps_size = Vector2(140, 40)
-    current_fps = Label(screen, WINDOW_SIZE - fps_size, fps_size, "", fontsize=14)
-    button = Button(screen, (10, 10), (100, 50), "开始")
-    clock = pg.time.Clock()
+    fps_size = Vector2(140, 30)
+    current_fps = Label(screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left")
     frame = 0  # 记录帧数
 
     while True:
@@ -42,17 +42,12 @@ def run_game():
                 view.on_mousedown(event)
 
         screen.blit(background, back_rect)
-        button.update()
+        past_sec = clock.tick(FPS) / 1000
         view.update()
         frame += 1
-        if frame % 20 == 0:
-            current_fps.update(f"当前帧率:{clock.get_fps():.2f}fps")
-        else:
-            current_fps.update()
+        fps_msg = f"当前帧率(fps): {clock.get_fps():.2f}" if frame % 20 == 0 else None
+        current_fps.update(fps_msg)
         pg.display.update()
-
-        s = clock.tick(FPS) / 1000
-        # print(frame, ":", s)
 
 
 if __name__ == "__main__":

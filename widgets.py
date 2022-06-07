@@ -16,21 +16,41 @@ class _Content:
     def load_image(self):
         if len(self.img_name):
             self.image = get_image(self.img_name, self.img_size)
-            self.image_rect = self.image.get_rect(center=self.rect.center)
+            img_align = {self.img_align: getattr(self.rect, self.img_align)}
+            if self.img_align in ("left", "right"):
+                img_align["centery"] = self.rect.centery
+            elif self.img_align in ("top", "bottom"):
+                img_align["centerx"] = self.rect.centerx
+            self.image_rect = self.image.get_rect(**img_align)
         else:
             self.image = None
 
     def render_text(self):
         if len(self.text):
             self.text_image = self.font.render(self.text, True, self.fontcolor)
-            self.text_rect = self.text_image.get_rect(center=self.rect.center)
+            text_align = {self.text_align: getattr(self.rect, self.text_align)}
+            if self.text_align in ("left", "right"):
+                text_align["centery"] = self.rect.centery
+            elif self.text_align in ("top", "bottom"):
+                text_align["centerx"] = self.rect.centerx
+            self.text_rect = self.text_image.get_rect(**text_align)
         else:
             self.text_image = None
 
-    def set_style(self, font: str, fontsize: int, fontcolor: str, img_size: Vect2):
+    def set_style(
+        self,
+        font: str,
+        fontsize: int,
+        fontcolor: str,
+        text_align: str,
+        img_size: Vect2,
+        img_align: str,
+    ):
         self.font = pf.Font(pjoin("font", f"{font}.TTF"), fontsize)
         self.fontcolor = fontcolor
+        self.text_align = text_align
         self.img_size = img_size
+        self.img_align = img_align
         self.render_text()
         self.load_image()
 
@@ -48,70 +68,23 @@ class _Content:
             self.screen.blit(self.text_image, self.text_rect)
 
 
-class _BasePanel(Sprite):
-    def __init__(
-        self,
-        screen: Surface,
-        pos: Vect2,
-        size: Vect2,
-        text: str,
-        img_name: str,
-        **style,
-    ):
-        super().__init__()
-        self.screen = screen
-        self.size = size
-        self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
-        self.content = _Content(screen, self.rect, text, img_name)
-        self.set_style(**style)
+class Button(Sprite):
+    default_style = {
+        ("radius", "r"): None,
+        ("background", "bg"): B_GREEN,
+        ("hover_back", "hb"): B_HOVER_GREEN,
+        ("border_width", "bw"): 0,
+        ("border_color", "bc"): RED,
+        ("border_radius", "br"): 0,
+        "font": "FZKATJW",
+        ("fontsize", "fs"): 36,
+        ("fontcolor", "fc"): B_WHITE,
+        ("text_align", "ta"): "center",
+        ("img_size", "ms"): None,
+        ("img_align", "ma"): "center",
+    }
+    content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
 
-    def set_style(self, **style):
-        pass
-
-    def set_back(self, radius: float, color: str):
-        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
-        back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
-        draw = ImageDraw.Draw(back_image)
-        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
-        draw.rounded_rectangle(xy, radius * 100, color)
-        self.back_image = pil2pg(back_image, self.size)
-
-    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
-        if self.back_image:
-            self.screen.blit(self.back_image, self.rect)
-        self.content.update(text, img_name)
-
-
-class Label(_BasePanel):
-    def __init__(
-        self,
-        screen: Surface,
-        pos: Vect2,
-        size: Vect2,
-        text: str = "",
-        img_name: str = "",
-        **style,
-    ):
-        super().__init__(screen, pos, size, text, img_name, **style)
-
-    def set_style(
-        self,
-        font: str = "MSYHMONO",
-        fontsize: int = 16,
-        fontcolor: str = B_WHITE,
-        radius: float = 0,
-        background: Union[str, None] = None,
-        img_size: Union[Vect2, None] = None,
-    ):
-        img_size = self.size if img_size is None else img_size
-        self.content.set_style(font, fontsize, fontcolor, img_size)
-        if background:
-            self.set_back(radius, background)
-        else:
-            self.back_image = None
-
-
-class Button(_BasePanel):
     def __init__(
         self,
         screen: Surface,
@@ -122,31 +95,44 @@ class Button(_BasePanel):
         callback: Callable = lambda: 1,
         **style,
     ):
-        super().__init__(screen, pos, size, text, img_name, **style)
+        super().__init__()
+        self.screen = screen
+        self.size = size
+        self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
+        self.content = _Content(screen, self.rect, text, img_name)
+        self.set_style(**style)
         self.callback = callback
 
-    def set_style(
-        self,
-        radius: Union[float, None] = None,
-        background: Union[str, None] = B_GREEN,
-        hover_back: Union[str, None] = B_HOVER_GREEN,
-        font: str = "FZKATJW",
-        fontsize: int = 36,
-        fontcolor: str = B_WHITE,
-        img_size: Union[Vect2, None] = None,
-    ):
-        img_size = self.size if img_size is None else img_size
-        self.content.set_style(font, fontsize, fontcolor, img_size)
-        radius = min(self.size[:]) * 0.3 if radius is None else radius
+    def set_style(self, **style):
+        self.style = self.default_style.copy()
+        for key, value in style.items():
+            set_style_value(self.style, key, value)
+        img_size = self.style["img_size", "ms"]
+        self.style["img_size", "ms"] = self.size if img_size is None else img_size
+        content_style = get_style_value(self.style, self.content_style_key)
+        self.content.set_style(*content_style)  # type: ignore
+        if self.style["radius", "r"] is None:
+            self.style["radius", "r"] = min(self.size[:]) * 0.3
+        radius = self.style["radius", "r"]
+        background = self.style["background", "bg"]
         if background:
             self.set_back(radius, background)
         else:
             self.back_image = None
 
+        hover_back = self.style["hover_back", "hb"]
         if hover_back:
             self.set_hover_back(radius, hover_back)
         else:
             self.hover_back = None
+
+    def set_back(self, radius: float, color: str):
+        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(back_image)
+        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
+        draw.rounded_rectangle(xy, radius * 100, color)
+        self.back_image = pil2pg(back_image, self.size)
 
     def set_hover_back(self, radius: float, hover_color: str):
         back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
@@ -173,6 +159,80 @@ class Button(_BasePanel):
         if background:
             self.screen.blit(background, self.rect)
         self.content.update(text, img_name)
+        draw_border(
+            self.screen,
+            self.rect,
+            self.style["border_color", "bc"],
+            self.style["border_width", "bw"],
+            self.style["border_radius", "br"],
+        )
+
+
+class Label(Sprite):
+    default_style = {
+        ("radius", "r"): 0,
+        ("background", "bg"): None,
+        ("border_width", "bw"): 0,
+        ("border_color", "bc"): RED,
+        ("border_radius", "br"): 0,
+        "font": "FZPSZHUNHJW",
+        ("fontsize", "fs"): 16,
+        ("fontcolor", "fc"): B_WHITE,
+        ("text_align", "ta"): "center",
+        ("img_size", "ms"): None,
+        ("img_align", "ma"): "center",
+    }
+    content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
+
+    def __init__(
+        self,
+        screen: Surface,
+        pos: Vect2,
+        size: Vect2,
+        text: str = "",
+        img_name: str = "",
+        **style,
+    ):
+        super().__init__()
+        self.screen = screen
+        self.size = size
+        self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
+        self.content = _Content(screen, self.rect, text, img_name)
+        self.set_style(**style)
+
+    def set_style(self, **style):
+        self.style = self.default_style.copy()
+        for key, value in style.items():
+            set_style_value(self.style, key, value)
+        img_size = self.style["img_size", "ms"]
+        self.style["img_size", "ms"] = self.size if img_size is None else img_size
+        content_style = get_style_value(self.style, self.content_style_key)
+        self.content.set_style(*content_style)  # type: ignore
+        background = self.style["background", "bg"]
+        if background:
+            self.set_back(self.style["radius", "r"], background)
+        else:
+            self.back_image = None
+
+    def set_back(self, radius: float, color: str):
+        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(back_image)
+        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
+        draw.rounded_rectangle(xy, radius * 100, color)
+        self.back_image = pil2pg(back_image, self.size)
+
+    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
+        if self.back_image:
+            self.screen.blit(self.back_image, self.rect)
+        self.content.update(text, img_name)
+        draw_border(
+            self.screen,
+            self.rect,
+            self.style["border_color", "bc"],
+            self.style["border_width", "bw"],
+            self.style["border_radius", "br"],
+        )
 
 
 class Pin(Sprite):
