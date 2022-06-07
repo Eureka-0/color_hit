@@ -23,6 +23,7 @@ def run_game():
     get_events = pg.event.get
     screen = pg.display.set_mode(WINDOW_SIZE)
     pg.display.set_caption("Color Hit")
+    pg.display.set_icon(get_image("color_hit_icon.png"))
     clock = pg.time.Clock()
 
     background, back_rect = get_back()

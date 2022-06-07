@@ -43,9 +43,12 @@ def plus_angle(angle: float, theta: float = ROTATION_SPEED) -> float:
     return angle - 360 if angle > 360 else angle
 
 
-def get_image(img_name: str, img_size: Vect2) -> Surface:
+def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
     image = pg.image.load(pjoin("img", img_name)).convert_alpha()
-    return pg.transform.smoothscale(image, img_size)
+    if img_size:
+        return pg.transform.smoothscale(image, img_size)
+    else:
+        return image
 
 
 def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
