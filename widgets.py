@@ -68,6 +68,44 @@ class _Content:
             self.screen.blit(self.text_image, self.text_rect)
 
 
+class _Style(dict):
+    def __init__(self, default: dict):
+        super().__init__(default.items())
+
+    def __getitem__(self, key: str):
+        for k in self:
+            if type(k) is str:
+                if k == key:
+                    return super().__getitem__(k)
+            elif key in k:
+                return super().__getitem__(k)
+        else:
+            raise KeyError(f"Key '{key}' does not exist in {self}!")
+
+    def __setitem__(self, key: str, value):
+        for k in self:
+            if type(k) is str:
+                if k == key:
+                    return super().__setitem__(k, value)
+            elif key in k:
+                return super().__setitem__(k, value)
+        return super().__setitem__(key, value)
+
+    def replace_default(self, key, default, new):
+        if self.__getitem__(key) == default:
+            self.__setitem__(key, new)
+
+    def update_values(self, **kwargs):
+        for key, value in kwargs.items():
+            self.__setitem__(key, value)
+
+    def get_values(self, keys: Sequence):
+        values = []
+        for k in keys:
+            values.append(self.__getitem__(k))
+        return values
+
+
 class Button(Sprite):
     default_style = {
         ("radius", "r"): None,
@@ -93,34 +131,30 @@ class Button(Sprite):
         text: str = "",
         img_name: str = "",
         callback: Callable = lambda: 1,
-        **style,
+        **kwargs,
     ):
         super().__init__()
         self.screen = screen
         self.size = size
         self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
         self.content = _Content(screen, self.rect, text, img_name)
-        self.set_style(**style)
+        self.style = _Style(self.default_style)
+        self.set_style(**kwargs)
         self.callback = callback
 
-    def set_style(self, **style):
-        self.style = self.default_style.copy()
-        for key, value in style.items():
-            set_style_value(self.style, key, value)
-        img_size = self.style["img_size", "ms"]
-        self.style["img_size", "ms"] = self.size if img_size is None else img_size
-        content_style = get_style_value(self.style, self.content_style_key)
-        self.content.set_style(*content_style)  # type: ignore
-        if self.style["radius", "r"] is None:
-            self.style["radius", "r"] = min(self.size[:]) * 0.3
-        radius = self.style["radius", "r"]
-        background = self.style["background", "bg"]
+    def set_style(self, **kwargs):
+        self.style.update_values(**kwargs)
+        self.style.replace_default("img_size", None, self.size)
+        self.style.replace_default("radius", None, min(self.size[:]) * 0.3)
+        self.content.set_style(*self.style.get_values(self.content_style_key))
+        radius = self.style["radius"]
+        background = self.style["background"]
         if background:
             self.set_back(radius, background)
         else:
             self.back_image = None
 
-        hover_back = self.style["hover_back", "hb"]
+        hover_back = self.style["hover_back"]
         if hover_back:
             self.set_hover_back(radius, hover_back)
         else:
@@ -159,13 +193,8 @@ class Button(Sprite):
         if background:
             self.screen.blit(background, self.rect)
         self.content.update(text, img_name)
-        draw_border(
-            self.screen,
-            self.rect,
-            self.style["border_color", "bc"],
-            self.style["border_width", "bw"],
-            self.style["border_radius", "br"],
-        )
+        style = self.style
+        draw_border(self.screen, self.rect, style["bc"], style["bw"], style["br"])
 
 
 class Label(Sprite):
@@ -191,26 +220,23 @@ class Label(Sprite):
         size: Vect2,
         text: str = "",
         img_name: str = "",
-        **style,
+        **kwargs,
     ):
         super().__init__()
         self.screen = screen
         self.size = size
         self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
         self.content = _Content(screen, self.rect, text, img_name)
-        self.set_style(**style)
+        self.style = _Style(self.default_style)
+        self.set_style(**kwargs)
 
-    def set_style(self, **style):
-        self.style = self.default_style.copy()
-        for key, value in style.items():
-            set_style_value(self.style, key, value)
-        img_size = self.style["img_size", "ms"]
-        self.style["img_size", "ms"] = self.size if img_size is None else img_size
-        content_style = get_style_value(self.style, self.content_style_key)
-        self.content.set_style(*content_style)  # type: ignore
-        background = self.style["background", "bg"]
+    def set_style(self, **kwargs):
+        self.style.update_values(**kwargs)
+        self.style.replace_default("img_size", None, self.size)
+        self.content.set_style(*self.style.get_values(self.content_style_key))
+        background = self.style["background"]
         if background:
-            self.set_back(self.style["radius", "r"], background)
+            self.set_back(self.style["radius"], background)
         else:
             self.back_image = None
 
@@ -226,13 +252,8 @@ class Label(Sprite):
         if self.back_image:
             self.screen.blit(self.back_image, self.rect)
         self.content.update(text, img_name)
-        draw_border(
-            self.screen,
-            self.rect,
-            self.style["border_color", "bc"],
-            self.style["border_width", "bw"],
-            self.style["border_radius", "br"],
-        )
+        style = self.style
+        draw_border(self.screen, self.rect, style["bc"], style["bw"], style["br"])
 
 
 class Pin(Sprite):

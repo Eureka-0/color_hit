@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Sequence, Union
 
 from PIL.Image import Image as PILImage
 from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT

@@ -7,32 +7,6 @@ import pygame as pg
 from config import *
 
 
-def set_style_value(style: dict, name: str, value):
-    for key in style:
-        if type(key) is str:
-            if name == key:
-                style[key] = value
-        else:
-            if name in key:
-                style[key] = value
-
-
-def get_style_value(style: dict, name: Union[str, list[str]]):
-    if type(name) is str:
-        for key, value in style.items():
-            if type(key) is str:
-                if name == key:
-                    return value
-            else:
-                if name in key:
-                    return value
-    else:
-        values = []
-        for n in name:
-            values.append(get_style_value(style, n))
-        return values
-
-
 def draw_border(screen: Surface, rect: Rect, color: str, width: int, radius: int):
     if width > 0:
         pg.draw.rect(screen, color, rect, width=width, border_radius=radius)

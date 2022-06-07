@@ -4,7 +4,7 @@ from math import cos, radians, sin
 from random import random
 
 from utils import *
-from views import Button, GameView, Label
+from views import GameView, Label
 
 
 def get_back() -> tuple[Surface, Rect]:
