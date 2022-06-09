@@ -3,6 +3,7 @@ from os.path import join as pjoin
 from random import randint, sample, shuffle
 
 import pygame as pg
+from pygame.sprite import collide_mask as _collide_mask
 
 from config import *
 
@@ -12,17 +13,14 @@ def draw_border(screen: Surface, rect: Rect, color: str, width: int, radius: int
         pg.draw.rect(screen, color, rect, width=width, border_radius=radius)
 
 
-def plus_angle(angle: float, theta: float = ROTATION_SPEED) -> float:
+def plus_angle(angle: float, theta: float) -> float:
     angle += theta
     return angle - 360 if angle > 360 else angle
 
 
 def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
     image = pg.image.load(pjoin("img", img_name)).convert_alpha()
-    if img_size:
-        return pg.transform.smoothscale(image, img_size)
-    else:
-        return image
+    return pg.transform.smoothscale(image, img_size) if img_size else image
 
 
 def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
@@ -32,9 +30,13 @@ def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
     return pg.transform.smoothscale(pgimg, size)
 
 
-def rotate(
-    img: Surface, angle: float, pos: Vector2, relative_pos: Vector2
-) -> tuple[Surface, Rect]:
+def vect2vector(vect: Vect2) -> Vector2:
+    return vect if type(vect) is Vector2 else Vector2(vect)
+
+
+def rotate(img: Surface, angle: float, pos: Vect2, relative_pos: Vect2):
+    pos = vect2vector(pos)
+    relative_pos = vect2vector(relative_pos)
     rect = img.get_rect(topleft=pos - relative_pos)
     offset = pos - Vector2(rect.center)
     rotated_offset = offset.rotate(angle)
@@ -45,7 +47,7 @@ def rotate(
 
 
 def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
-    return True if pg.sprite.collide_mask(sprite1, sprite2) else False
+    return True if _collide_mask(sprite1, sprite2) else False
 
 
 def expand_colors(colors: list[str], num: list[int]) -> list[str]:

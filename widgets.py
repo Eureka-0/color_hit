@@ -46,7 +46,7 @@ class _Content:
         img_size: Vect2,
         img_align: str,
     ):
-        self.font = pf.Font(pjoin("font", f"{font}.TTF"), fontsize)
+        self.font = pf.Font(pjoin("font", font), fontsize)
         self.fontcolor = fontcolor
         self.text_align = text_align
         self.img_size = img_size
@@ -69,6 +69,8 @@ class _Content:
 
 
 class _Style(dict):
+    content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
+
     def __init__(self, default: dict):
         super().__init__(default.items())
 
@@ -91,7 +93,7 @@ class _Style(dict):
                 return super().__setitem__(k, value)
         return super().__setitem__(key, value)
 
-    def replace_default(self, key, default, new):
+    def replace_default(self, key: str, default, new):
         if self.__getitem__(key) == default:
             self.__setitem__(key, new)
 
@@ -99,11 +101,14 @@ class _Style(dict):
         for key, value in kwargs.items():
             self.__setitem__(key, value)
 
-    def get_values(self, keys: Sequence):
+    def get_values(self, keys: Sequence) -> list:
         values = []
         for k in keys:
             values.append(self.__getitem__(k))
         return values
+
+    def get_content_styles(self) -> list:
+        return self.get_values(_Style.content_style_key)
 
 
 class Button(Sprite):
@@ -114,14 +119,13 @@ class Button(Sprite):
         ("border_width", "bw"): 0,
         ("border_color", "bc"): RED,
         ("border_radius", "br"): 0,
-        "font": "FZKATJW",
+        "font": "FZKATJW.TTF",
         ("fontsize", "fs"): 36,
         ("fontcolor", "fc"): B_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
     }
-    content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
 
     def __init__(
         self,
@@ -138,7 +142,7 @@ class Button(Sprite):
         self.size = size
         self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
         self.content = _Content(screen, self.rect, text, img_name)
-        self.style = _Style(self.default_style)
+        self.style = _Style(Button.default_style)
         self.set_style(**kwargs)
         self.callback = callback
 
@@ -146,7 +150,7 @@ class Button(Sprite):
         self.style.update_values(**kwargs)
         self.style.replace_default("img_size", None, self.size)
         self.style.replace_default("radius", None, min(self.size[:]) * 0.3)
-        self.content.set_style(*self.style.get_values(self.content_style_key))
+        self.content.set_style(*self.style.get_content_styles())
         radius = self.style["radius"]
         background = self.style["background"]
         if background:
@@ -204,14 +208,13 @@ class Label(Sprite):
         ("border_width", "bw"): 0,
         ("border_color", "bc"): RED,
         ("border_radius", "br"): 0,
-        "font": "FZPSZHUNHJW",
+        "font": "FZPSZHUNHJW.TTF",
         ("fontsize", "fs"): 16,
         ("fontcolor", "fc"): B_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
     }
-    content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
 
     def __init__(
         self,
@@ -227,13 +230,13 @@ class Label(Sprite):
         self.size = size
         self.rect: Rect = Rect(pos[0], pos[1], size[0], size[1])
         self.content = _Content(screen, self.rect, text, img_name)
-        self.style = _Style(self.default_style)
+        self.style = _Style(Label.default_style)
         self.set_style(**kwargs)
 
     def set_style(self, **kwargs):
         self.style.update_values(**kwargs)
         self.style.replace_default("img_size", None, self.size)
-        self.content.set_style(*self.style.get_values(self.content_style_key))
+        self.content.set_style(*self.style.get_content_styles())
         background = self.style["background"]
         if background:
             self.set_back(self.style["radius"], background)
@@ -284,18 +287,18 @@ class Pin(Sprite):
         self.origin_image = pil2pg(image, PIN_SIZE)
         self.image: Surface = self.origin_image.copy()
 
-    def update(self):
+    def update(self, delta: float):
         if self.mode == SHOOT:
-            self.rect.centery -= SHOOT_SPEED
+            self.rect.centery -= round(SHOOT_SPEED * delta)
         elif self.mode == PRICK:
-            self.angle = plus_angle(self.angle)
+            self.angle = plus_angle(self.angle, delta)
             relative_pos = Vector2(PIN_SIZE[0] / 2, PRICK_DEPTH - RADIUS)
             self.image, self.rect = rotate(
                 self.origin_image, self.angle, CENTER, relative_pos
             )
         elif self.mode == DROP:
-            self.rect.centery += DROP_SPEED
-            self.rect.centerx += DROP_SPEED // 2
+            self.rect.centery += round(DROP_SPEED * delta)
+            self.rect.centerx += round(DROP_SPEED * delta) // 2
 
         self.screen.blit(self.image, self.rect)
 
@@ -321,54 +324,58 @@ class Pie(Sprite):
         self.origin_image = pil2pg(image, (2 * RADIUS, 2 * RADIUS))
         self.image: Surface = self.origin_image.copy()
 
-    def update(self):
-        self.angle = plus_angle(self.angle)
+    def update(self, theta: float):
+        self.angle = plus_angle(self.angle, theta)
         self.image, self.rect = rotate(
-            self.origin_image, self.angle, CENTER, Vector2(RADIUS, RADIUS)
+            self.origin_image, self.angle, CENTER, (RADIUS, RADIUS)
         )
-
         self.screen.blit(self.image, self.rect)
 
 
 class Balk(Sprite):
-    def __init__(self):
-        pass
+    def __init__(self, screen: Surface, disc: Group):
+        super().__init__(disc)
+        self.screen = screen
 
 
 class Bonus(Sprite):
-    def __init__(self):
-        pass
+    def __init__(self, screen: Surface, disc: Group):
+        super().__init__(disc)
+        self.screen = screen
+
+
+def get_pies(screen: Surface, colors: set) -> list[Pie]:
+    sector_degree = 360 / len(colors)
+    pies = []
+    for i, color in enumerate(colors):
+        start_degree = i * sector_degree
+        pies.append(Pie(screen, color, start_degree, sector_degree))
+    return pies
 
 
 class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
-        self.screen = screen
-        self.sector_num = len(set(colors))
-        self.colors = list(set(colors))
-        super().__init__(*self.generate_pies())
+        super().__init__(*get_pies(screen, set(colors)))
 
-    def generate_pies(self) -> list[Pie]:
-        sector_degree = 360 / len(self.colors)
-        pies = []
-        for i in range(self.sector_num):
-            color = self.colors[i]
-            start_degree = i * sector_degree
-            pies.append(Pie(self.screen, color, start_degree, sector_degree))
-        return pies
-
-    def update(self):
+    def sorted_sprites(self):
         sorted_sprites = []
         for spr in self.sprites():
-            if isinstance(spr, Pie):
+            if type(spr) is Pie:
                 sorted_sprites.append(spr)
             else:
                 sorted_sprites.insert(0, spr)
+        return sorted_sprites
 
-        for spr in sorted_sprites:
-            spr.update()
+    def __iter__(self) -> Iterator[Sprite]:
+        return iter(self.sorted_sprites())
+
+    def update(self, past_sec: float):
+        theta = ROTATION_SPEED * past_sec
+        for spr in self.sorted_sprites():
+            spr.update(theta)
 
 
-class _Bullet(Sprite):
+class Bullet(Sprite):
     def __init__(self, screen: Surface, color: str, pos: tuple[float, float]):
         super().__init__()
         self.screen = screen
@@ -379,19 +386,17 @@ class _Bullet(Sprite):
         pg.draw.rect(self.screen, self.color, self.rect)
 
 
-class Bullets(Group):
-    def __init__(self, screen: Surface, colors: list[str]):
-        self.screen = screen
-        self.colors = colors
-        self.number = len(colors)
-        bullets = []
-        for i, color in enumerate(self.colors):
-            pos = (BULLETS_POS[0], BULLETS_POS[1] - 3 * i * BULLET_SIZE[1])
-            bullets.append(_Bullet(self.screen, color, pos))
-        super().__init__(*bullets)
+class OrderedGruop(Group):
+    def __init__(self, *sprites):
+        self.widget_list = []
+        super().__init__(*sprites)
 
-    def update(self):
-        if self.number < len(self.sprites()) and len(self.sprites()):
-            self.remove(self.sprites()[-1])
-        for bullet in self.sprites():
-            bullet.update()
+    def add(self, *sprites):
+        super().add(*sprites)
+        self.widget_list.extend(sprites)
+
+    def __iter__(self) -> Iterator[Sprite]:
+        return iter(self.widget_list)
+
+    def pop_widget(self):
+        self.remove(self.widget_list.pop())
