@@ -2,6 +2,7 @@ import os
 import sys
 from math import cos, radians, sin
 from random import random
+from tkinter import Tk, messagebox
 
 from utils import *
 from views import GameView, Label
@@ -17,6 +18,8 @@ def get_back() -> tuple[Surface, Rect]:
 
 
 def run_game():
+    tkwindow = Tk()
+    tkwindow.wm_withdraw()
     pg.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
@@ -28,7 +31,7 @@ def run_game():
 
     background, back_rect = get_back()
     view = GameView(screen)
-    fps_size = Vector2(140, 30)
+    fps_size = Vector2(150, 30)
     current_fps = Label(screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left")
     frame = 0  # 记录帧数
 
@@ -44,7 +47,14 @@ def run_game():
 
         screen.blit(background, back_rect)
         past_sec = clock.tick(FPS) / 1000
-        view.update()
+        game_over = view.update(past_sec)
+        if game_over:
+            retry = messagebox.askokcancel(message="Game over! Try again?")
+            if retry:
+                view = GameView(screen)
+            else:
+                pg.quit()
+                sys.exit()
         frame += 1
         fps_msg = f"当前帧率(fps): {clock.get_fps():.2f}" if frame % 20 == 0 else None
         current_fps.update(fps_msg)
