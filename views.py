@@ -1,5 +1,9 @@
-from widgets import *
 import json
+import os
+
+from pygame.sprite import collide_mask
+
+from widgets import *
 
 
 def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
@@ -51,7 +55,12 @@ class GameView:
         self.init_level()
 
     def read_best_score(self) -> int:
-        with open(pjoin("res", "best_score.json"), "r", encoding="utf-8") as f:
+        best_score = pjoin("res", "best_score.json")
+        if not os.path.exists(best_score):
+            with open(best_score, "w", encoding="utf-8") as f:
+                json.dump({"best_score": 0}, f, indent=4)
+            return 0
+        with open(best_score, "r", encoding="utf-8") as f:
             return json.load(f)["best_score"]
 
     def rewrite_best_score(self):

@@ -3,7 +3,6 @@ from os.path import join as pjoin
 from random import randint, sample, shuffle
 
 import pygame as pg
-from pygame.sprite import collide_mask
 
 from config import *
 

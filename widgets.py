@@ -69,6 +69,15 @@ class _Content:
             self.screen.blit(self.text_image, self.text_rect)
 
 
+def _is_or_in(k: str, key: tuple[str, tuple[str, str]]) -> bool:
+    if type(key) is str:
+        if k == key:
+            return True
+    elif k in key:
+        return True
+    return False
+
+
 class _Style(dict):
     content_style_key = ["font", "fs", "fc", "ta", "ms", "ma"]
 
@@ -77,20 +86,14 @@ class _Style(dict):
 
     def __getitem__(self, key: str):
         for k in self:
-            if type(k) is str:
-                if k == key:
-                    return super().__getitem__(k)
-            elif key in k:
+            if _is_or_in(key, k):
                 return super().__getitem__(k)
         else:
             raise KeyError(f"Key '{key}' does not exist in {self}!")
 
     def __setitem__(self, key: str, value):
         for k in self:
-            if type(k) is str:
-                if k == key:
-                    return super().__setitem__(k, value)
-            elif key in k:
+            if _is_or_in(key, k):
                 return super().__setitem__(k, value)
         return super().__setitem__(key, value)
 

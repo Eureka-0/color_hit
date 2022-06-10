@@ -1,11 +1,10 @@
-import os
 import sys
 from math import cos, radians, sin
 from random import random
 from tkinter import Tk, messagebox
 
 from utils import *
-from views import GameView, Label
+from views import GameView, Label, os
 
 
 def get_back() -> tuple[Surface, Rect]:
@@ -38,6 +37,9 @@ def run_game():
     while True:
         for event in get_events():
             if event.type == QUIT:
+                if type(view) is GameView:
+                    if view.score > view.best_score:
+                        view.rewrite_best_score()
                 pg.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
@@ -47,14 +49,17 @@ def run_game():
 
         screen.blit(background, back_rect)
         past_sec = clock.tick(FPS) / 1000
-        game_over = view.update(past_sec)
-        if game_over:
-            retry = messagebox.askokcancel(message="Game over! Try again?")
-            if retry:
-                view = GameView(screen)
-            else:
-                pg.quit()
-                sys.exit()
+        if type(view) is GameView:
+            game_over = view.update(past_sec)
+            if game_over:
+                retry = messagebox.askokcancel(message="Game over! Try again?")
+                if retry:
+                    view = GameView(screen)
+                else:
+                    pg.quit()
+                    sys.exit()
+        else:
+            view.update(past_sec)
         frame += 1
         if frame % 20 == 0:
             current_fps.update_content(f"当前帧率(fps): {clock.get_fps():.2f}")
