@@ -1,4 +1,5 @@
 from widgets import *
+import json
 
 
 def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
@@ -36,8 +37,26 @@ class GameView:
     def __init__(self, screen: Surface):
         self.screen = screen
         self.hearts = group_heart_label(screen)
+        self.best_score = self.read_best_score()
+        self.best_score_board = Label(
+            screen, BEST_SCORE_POS, BEST_SCORE_SIZE, f"BESTSCORE  {self.best_score}"
+        )
+        self.best_score_board.set_style(
+            font="TabletGothicBold.OTF", fs=16, fc=TEXT_BLUE
+        )
+        self.score = 0
+        self.score_board = Label(screen, SCORE_POS, SCORE_SIZE, f"{self.score}")
+        self.score_board.set_style(font="TabletGothicBold.OTF", fs=20)
         self.level = 1
         self.init_level()
+
+    def read_best_score(self) -> int:
+        with open(pjoin("res", "best_score.json"), "r", encoding="utf-8") as f:
+            return json.load(f)["best_score"]
+
+    def rewrite_best_score(self):
+        with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
+            json.dump({"best_score": self.score}, f, indent=4)
 
     def init_level(self):
         self.colors = get_ordered_colors(self.level)
@@ -78,6 +97,8 @@ class GameView:
                 if correct:
                     self.pin.mode = PRICK
                     self.disc.add(self.pin)
+                    self.score += randint(10, 15)
+                    self.score_board.update_content(f"{self.score}")
                     self.next_pin()
                 elif correct is False:
                     self.pin.mode = DROP
@@ -90,4 +111,6 @@ class GameView:
                     widget.update()
             return False
         else:
+            if self.score > self.best_score:
+                self.rewrite_best_score()
             return True

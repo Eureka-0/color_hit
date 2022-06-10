@@ -56,8 +56,9 @@ def run_game():
                 pg.quit()
                 sys.exit()
         frame += 1
-        fps_msg = f"当前帧率(fps): {clock.get_fps():.2f}" if frame % 20 == 0 else None
-        current_fps.update(fps_msg)
+        if frame % 20 == 0:
+            current_fps.update_content(f"当前帧率(fps): {clock.get_fps():.2f}")
+        current_fps.update()
         pg.display.update()
 
 

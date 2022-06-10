@@ -62,6 +62,7 @@ class _Content:
             self.img_name = img_name
             self.load_image()
 
+    def draw(self):
         if self.image:
             self.screen.blit(self.image, self.image_rect)
         if self.text_image:
@@ -114,14 +115,14 @@ class _Style(dict):
 class Button(Sprite):
     default_style = {
         ("radius", "r"): None,
-        ("background", "bg"): B_GREEN,
-        ("hover_back", "hb"): B_HOVER_GREEN,
+        ("background", "bg"): BUTTON_GREEN,
+        ("hover_back", "hb"): BUTTON_HOVER_GREEN,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): RED,
+        ("border_color", "bc"): PIE_RED,
         ("border_radius", "br"): 0,
         "font": "FZKATJW.TTF",
         ("fontsize", "fs"): 36,
-        ("fontcolor", "fc"): B_WHITE,
+        ("fontcolor", "fc"): TEXT_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -187,7 +188,12 @@ class Button(Sprite):
         if self.check_mouse_pos(event.pos):
             self.callback()
 
-    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
+    def update_content(
+        self, text: Union[str, None] = None, img_name: Union[str, None] = None
+    ):
+        self.content.update(text, img_name)
+
+    def update(self):
         background = self.back_image
         if self.hover_back:
             mouse_pos = pg.mouse.get_pos()
@@ -196,7 +202,7 @@ class Button(Sprite):
 
         if background:
             self.screen.blit(background, self.rect)
-        self.content.update(text, img_name)
+        self.content.draw()
         style = self.style
         draw_border(self.screen, self.rect, style["bc"], style["bw"], style["br"])
 
@@ -206,11 +212,11 @@ class Label(Sprite):
         ("radius", "r"): 0,
         ("background", "bg"): None,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): RED,
+        ("border_color", "bc"): PIE_RED,
         ("border_radius", "br"): 0,
         "font": "FZPSZHUNHJW.TTF",
         ("fontsize", "fs"): 16,
-        ("fontcolor", "fc"): B_WHITE,
+        ("fontcolor", "fc"): TEXT_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -251,10 +257,15 @@ class Label(Sprite):
         draw.rounded_rectangle(xy, radius * 100, color)
         self.back_image = pil2pg(back_image, self.size)
 
-    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
+    def update_content(
+        self, text: Union[str, None] = None, img_name: Union[str, None] = None
+    ):
+        self.content.update(text, img_name)
+
+    def update(self):
         if self.back_image:
             self.screen.blit(self.back_image, self.rect)
-        self.content.update(text, img_name)
+        self.content.draw()
         style = self.style
         draw_border(self.screen, self.rect, style["bc"], style["bw"], style["br"])
 
@@ -344,7 +355,7 @@ class Bonus(Sprite):
         self.screen = screen
 
 
-def get_pies(screen: Surface, colors: set) -> list[Pie]:
+def _get_pies(screen: Surface, colors: set) -> list[Pie]:
     sector_degree = 360 / len(colors)
     pies = []
     for i, color in enumerate(colors):
@@ -355,7 +366,7 @@ def get_pies(screen: Surface, colors: set) -> list[Pie]:
 
 class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
-        super().__init__(*get_pies(screen, set(colors)))
+        super().__init__(*_get_pies(screen, set(colors)))
 
     def sorted_sprites(self):
         sorted_sprites = []

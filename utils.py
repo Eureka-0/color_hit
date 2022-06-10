@@ -3,7 +3,7 @@ from os.path import join as pjoin
 from random import randint, sample, shuffle
 
 import pygame as pg
-from pygame.sprite import collide_mask as _collide_mask
+from pygame.sprite import collide_mask
 
 from config import *
 
@@ -44,10 +44,6 @@ def rotate(img: Surface, angle: float, pos: Vect2, relative_pos: Vect2):
     rotated_img = pg.transform.rotozoom(img, -angle, 1)
     rotated_rect = rotated_img.get_rect(center=rotated_center)
     return rotated_img, rotated_rect
-
-
-def collide_mask(sprite1: Sprite, sprite2: Sprite) -> bool:
-    return True if _collide_mask(sprite1, sprite2) else False
 
 
 def expand_colors(colors: list[str], num: list[int]) -> list[str]:
