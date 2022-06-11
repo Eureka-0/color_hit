@@ -13,8 +13,7 @@ def draw_border(screen: Surface, rect: Rect, color: str, width: int, radius: int
 
 
 def plus_angle(angle: float, theta: float) -> float:
-    angle += theta
-    return angle - 360 if angle > 360 else angle
+    return (angle + theta) % 360
 
 
 def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
