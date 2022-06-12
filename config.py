@@ -35,6 +35,9 @@ BEST_SCORE_POS = Vector2((WINDOW_SIZE[0] - BEST_SCORE_SIZE[0]) / 2, 8)  # 最高
 SCORE_SIZE = Vector2(100, 30)  # 当前得分显示大小
 SCORE_POS = Vector2((WINDOW_SIZE[0] - SCORE_SIZE[0]) / 2, 30)  # 当前得分显示位置
 
+PAUSE_POS = Vector2(645, 10)  # 暂停按钮显示位置
+PAUSE_SIZE = Vector2(35, 35)  # 暂停按钮大小
+
 
 # 圆盘与飞镖颜色
 PIE_RED = "#F32424"

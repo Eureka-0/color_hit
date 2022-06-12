@@ -58,12 +58,15 @@ def run_game():
                 else:
                     pg.quit()
                     sys.exit()
+            else:
+                view.draw()
         else:
             view.update(past_sec)
+            view.draw()
         frame += 1
         if frame % 20 == 0:
-            current_fps.update_content(f"当前帧率(fps): {clock.get_fps():.2f}")
-        current_fps.update()
+            current_fps.update(f"当前帧率(fps): {clock.get_fps():.2f}")
+        current_fps.draw()
         pg.display.update()
 
 

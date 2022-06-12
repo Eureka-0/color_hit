@@ -7,7 +7,7 @@ from widgets import *
 
 
 def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
-    bullets = OrderedGruop()
+    bullets = OrderedGruop(screen)
     for i, color in enumerate(colors):
         pos = (BULLETS_POS[0], BULLETS_POS[1] - 3 * i * BULLET_SIZE[1])
         bullets.add(Bullet(screen, color, pos))
@@ -15,7 +15,7 @@ def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
 
 
 def group_heart_label(screen: Surface) -> OrderedGruop:
-    hearts = OrderedGruop()
+    hearts = OrderedGruop(screen)
     for i in range(3):
         pos = (HEARTS_POS[0], HEARTS_POS[1] + i * HEART_SIZE[0])
         hearts.add(Label(screen, pos, HEART_SIZE, img_name="heart.png"))
@@ -51,6 +51,12 @@ class GameView:
         self.score = 0
         self.score_board = Label(screen, SCORE_POS, SCORE_SIZE, f"{self.score}")
         self.score_board.set_style(font="TabletGothicBold.OTF", fs=20)
+
+        self.pause = False
+        self.pause_button = Button(screen, PAUSE_POS, PAUSE_SIZE, img_name="pause.png")
+        self.pause_button.set_style(r=PAUSE_SIZE[0] / 2)
+        self.pause_button.set_callback(self.switch_pause)
+
         self.level = 1
         self.init_level()
 
@@ -67,6 +73,14 @@ class GameView:
         with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
             json.dump({"best_score": self.score}, f, indent=4)
 
+    def switch_pause(self):
+        if self.pause:
+            self.pause = False
+            self.pause_button.update(img_name="pause.png")
+        else:
+            self.pause = True
+            self.pause_button.update(img_name="go_on.png")
+
     def init_level(self):
         self.colors = get_ordered_colors(self.level)
         self.pin = Pin(self.screen, self.colors[-1])
@@ -75,14 +89,16 @@ class GameView:
         self.colors.pop()
 
     def on_keydown(self, event: Event):
-        if event.key == pg.K_SPACE and self.pin.mode == STILL:
+        if not self.pause and event.key == pg.K_SPACE and self.pin.mode == STILL:
             self.pin.mode = SHOOT
             self.bullets.pop_widget()
 
     def on_mousedown(self, event: Event):
-        if event.button == pg.BUTTON_LEFT and self.pin.mode == STILL:
-            self.pin.mode = SHOOT
-            self.bullets.pop_widget()
+        if event.button == pg.BUTTON_LEFT:
+            click = self.pause_button.check_click(event)
+            if not click and not self.pause and self.pin.mode == STILL:
+                self.pin.mode = SHOOT
+                self.bullets.pop_widget()
 
     def next_pin(self):
         if len(self.colors) > 0:
@@ -97,29 +113,37 @@ class GameView:
                 yield v
 
     def update(self, past_sec: float) -> bool:
-        if self.pin.rect.top >= WINDOW_SIZE[1]:
-            self.next_pin()
-
-        if len(self.hearts):
-            if self.pin.mode == SHOOT:
-                correct = hit_correct_color(self.pin, self.disc)
-                if correct:
-                    self.pin.mode = PRICK
-                    self.disc.add(self.pin)
-                    self.score += randint(10, 15)
-                    self.score_board.update_content(f"{self.score}")
-                    self.next_pin()
-                elif correct is False:
-                    self.pin.mode = DROP
-                    self.hearts.pop_widget()
-
-            for widget in self.get_widgets():
-                try:
-                    widget.update(past_sec)
-                except TypeError:
-                    widget.update()
+        if self.pause:
+            self.pause_button.update()
             return False
         else:
-            if self.score > self.best_score:
-                self.rewrite_best_score()
-            return True
+            if self.pin.rect.top >= WINDOW_SIZE[1]:
+                self.next_pin()
+
+            if len(self.hearts):
+                if self.pin.mode == SHOOT:
+                    correct = hit_correct_color(self.pin, self.disc)
+                    if correct:
+                        self.pin.mode = PRICK
+                        self.disc.add(self.pin)
+                        self.score += randint(10, 15)
+                        self.next_pin()
+                    elif correct is False:
+                        self.pin.mode = DROP
+                        self.hearts.pop_widget()
+
+                self.pin.update(past_sec)
+                self.disc.update(past_sec)
+                self.score_board.update(f"{self.score}")
+                self.hearts.update()
+                self.bullets.update()
+                self.pause_button.update()
+                return False
+            else:
+                if self.score > self.best_score:
+                    self.rewrite_best_score()
+                return True
+
+    def draw(self):
+        for widget in self.get_widgets():
+            widget.draw()  # type: ignore

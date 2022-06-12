@@ -148,6 +148,7 @@ class Button(Sprite):
         self.content = _Content(screen, self.rect, text, img_name)
         self.style = _Style(Button.default_style)
         self.set_style(**kwargs)
+        self.hover = False
         self.callback = callback
 
     def set_style(self, **kwargs):
@@ -168,6 +169,9 @@ class Button(Sprite):
         else:
             self.hover_back = None
 
+    def set_callback(self, callback: Callable):
+        self.callback = callback
+
     def set_back(self, radius: float, color: str):
         back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
         back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
@@ -187,24 +191,26 @@ class Button(Sprite):
     def check_mouse_pos(self, mouse_pos) -> bool:
         return True if self.rect.collidepoint(mouse_pos) else False
 
-    def check_click(self, event: Event):
+    def check_click(self, event: Event, *args, **kwargs) -> bool:
         if self.check_mouse_pos(event.pos):
-            self.callback()
+            self.callback(*args, **kwargs)
+            return True
+        else:
+            return False
 
-    def update_content(
-        self, text: Union[str, None] = None, img_name: Union[str, None] = None
-    ):
+    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
         self.content.update(text, img_name)
+        mouse_pos = pg.mouse.get_pos()
+        if self.check_mouse_pos(mouse_pos):
+            self.hover = True
+        else:
+            self.hover = False
 
-    def update(self):
-        background = self.back_image
-        if self.hover_back:
-            mouse_pos = pg.mouse.get_pos()
-            if self.check_mouse_pos(mouse_pos):
-                background = self.hover_back
-
-        if background:
-            self.screen.blit(background, self.rect)
+    def draw(self):
+        if self.hover_back and self.hover:
+            self.screen.blit(self.hover_back, self.rect)
+        elif self.back_image:
+            self.screen.blit(self.back_image, self.rect)
         self.content.draw()
         style = self.style
         draw_border(self.screen, self.rect, style["bc"], style["bw"], style["br"])
@@ -260,12 +266,10 @@ class Label(Sprite):
         draw.rounded_rectangle(xy, radius * 100, color)
         self.back_image = pil2pg(back_image, self.size)
 
-    def update_content(
-        self, text: Union[str, None] = None, img_name: Union[str, None] = None
-    ):
+    def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):
         self.content.update(text, img_name)
 
-    def update(self):
+    def draw(self):
         if self.back_image:
             self.screen.blit(self.back_image, self.rect)
         self.content.draw()
@@ -314,6 +318,7 @@ class Pin(Sprite):
             self.rect.centery += round(DROP_SPEED * delta)
             self.rect.centerx += round(DROP_SPEED * delta) // 2
 
+    def draw(self):
         self.screen.blit(self.image, self.rect)
 
 
@@ -343,6 +348,8 @@ class Pie(Sprite):
         self.image, self.rect = rotate(
             self.origin_image, self.angle, CENTER, (RADIUS, RADIUS)
         )
+
+    def draw(self):
         self.screen.blit(self.image, self.rect)
 
 
@@ -385,8 +392,12 @@ class Disc(Group):
 
     def update(self, past_sec: float):
         theta = ROTATION_SPEED * past_sec
-        for spr in self.sorted_sprites():
+        for spr in self:
             spr.update(theta)
+
+    def draw(self):
+        for spr in self:
+            spr.draw()  # type: ignore
 
 
 class Bullet(Sprite):
@@ -396,12 +407,13 @@ class Bullet(Sprite):
         self.color = color
         self.rect: Rect = Rect(pos[0], pos[1], BULLET_SIZE[0], BULLET_SIZE[1])
 
-    def update(self):
+    def draw(self):
         pg.draw.rect(self.screen, self.color, self.rect)
 
 
 class OrderedGruop(Group):
-    def __init__(self, *sprites):
+    def __init__(self, screen, *sprites):
+        self.screen = screen
         self.widget_list = []
         super().__init__(*sprites)
 
@@ -414,3 +426,7 @@ class OrderedGruop(Group):
 
     def pop_widget(self):
         self.remove(self.widget_list.pop())
+
+    def draw(self):
+        for spr in self:
+            spr.draw()  # type: ignore
