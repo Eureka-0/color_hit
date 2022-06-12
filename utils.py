@@ -1,3 +1,5 @@
+import json
+import os
 from functools import reduce
 from os.path import join as pjoin
 from random import randint, sample, shuffle
@@ -5,6 +7,15 @@ from random import randint, sample, shuffle
 import pygame as pg
 
 from config import *
+
+
+def is_or_in(k: str, key: tuple[str, tuple[str, str]]) -> bool:
+    if type(key) is str:
+        if k == key:
+            return True
+    elif k in key:
+        return True
+    return False
 
 
 def draw_border(screen: Surface, rect: Rect, color: str, width: int, radius: int):
@@ -85,3 +96,19 @@ def get_ordered_colors(level: int) -> list[str]:
         colors = rand_colors(4)
         num = rand_num(4)
     return expand_colors(colors, num)
+
+
+def read_best_score() -> int:
+    best_score = pjoin("res", "best_score.json")
+    if not os.path.exists(best_score):
+        with open(best_score, "w", encoding="utf-8") as f:
+            json.dump({"best_score": 0}, f, indent=4)
+        return 0
+    with open(best_score, "r", encoding="utf-8") as f:
+        return json.load(f)["best_score"]
+
+
+def rewrite_best_score(score, best_score):
+    if score > best_score:
+        with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
+            json.dump({"best_score": score}, f, indent=4)

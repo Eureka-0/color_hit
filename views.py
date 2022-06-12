@@ -1,6 +1,3 @@
-import json
-import os
-
 from pygame.sprite import collide_mask
 
 from widgets import *
@@ -41,7 +38,7 @@ class GameView:
     def __init__(self, screen: Surface):
         self.screen = screen
         self.hearts = group_heart_label(screen)
-        self.best_score = self.read_best_score()
+        self.best_score = read_best_score()
         self.best_score_board = Label(
             screen, BEST_SCORE_POS, BEST_SCORE_SIZE, f"BESTSCORE  {self.best_score}"
         )
@@ -59,19 +56,6 @@ class GameView:
 
         self.level = 1
         self.init_level()
-
-    def read_best_score(self) -> int:
-        best_score = pjoin("res", "best_score.json")
-        if not os.path.exists(best_score):
-            with open(best_score, "w", encoding="utf-8") as f:
-                json.dump({"best_score": 0}, f, indent=4)
-            return 0
-        with open(best_score, "r", encoding="utf-8") as f:
-            return json.load(f)["best_score"]
-
-    def rewrite_best_score(self):
-        with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
-            json.dump({"best_score": self.score}, f, indent=4)
 
     def switch_pause(self):
         if self.pause:
@@ -140,8 +124,7 @@ class GameView:
                 self.pause_button.update()
                 return False
             else:
-                if self.score > self.best_score:
-                    self.rewrite_best_score()
+                rewrite_best_score(self.score, self.best_score)
                 return True
 
     def draw(self):

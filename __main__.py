@@ -38,8 +38,7 @@ def run_game():
         for event in get_events():
             if event.type == QUIT:
                 if type(view) is GameView:
-                    if view.score > view.best_score:
-                        view.rewrite_best_score()
+                    rewrite_best_score(view.score, view.best_score)
                 pg.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
