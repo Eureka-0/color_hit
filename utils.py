@@ -1,8 +1,9 @@
 import json
 import os
 from functools import reduce
+from math import cos, radians, sin
 from os.path import join as pjoin
-from random import randint, sample, shuffle
+from random import randint, random, sample, shuffle
 
 import pygame as pg
 
@@ -112,3 +113,13 @@ def rewrite_best_score(score, best_score):
     if score > best_score:
         with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
             json.dump({"best_score": score}, f, indent=4)
+
+
+def get_back() -> tuple[Surface, Rect]:
+    s = max(WINDOW_SIZE[0], WINDOW_SIZE[1])
+    background = get_image("background.png", (s, s))
+    theta = random() * 360
+    scale = random() + abs(cos(radians(theta))) + abs(sin(radians(theta)))
+    back = pg.transform.rotozoom(background, theta, scale)
+    back_rect = back.get_rect(center=WINDOW_SIZE / 2)
+    return back, back_rect

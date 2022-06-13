@@ -15,19 +15,22 @@ FPS = 120  # 游戏最高帧率
 
 
 # 组件位置与大小，单位为像素
-WINDOW_SIZE = Vector2(700, 700)  # 主窗口大小
+WINDOW_SIZE = Vector2(600, 700)  # 主窗口大小
+
+START_SIZE = Vector2(120, 60)
+START_POS = Vector2((WINDOW_SIZE[0] - START_SIZE[0]) / 2, 350)
 
 PIN_SIZE = Vector2(35, 100)  # 飞镖大小
 MARGINAL_WIDTH = 3  # 飞镖圆形头部边缘宽度
 PRICK_DEPTH = 60  # 飞镖扎入深度
 
-CENTER = Vector2(350, 260)  # color disc 圆心位置
+CENTER = Vector2(WINDOW_SIZE[0] / 2, 260)  # color disc 圆心位置
 RADIUS = 120  # color disc 半径
 
 BULLETS_POS = Vector2(50, 500)  # 剩余飞镖的显示位置
 BULLET_SIZE = Vector2(20, 4)  # 剩余飞镖图标大小
 
-HEARTS_POS = Vector2(650, 100)  # 生命值显示位置
+HEARTS_POS = Vector2(WINDOW_SIZE[0] - 50, 100)  # 生命值显示位置
 HEART_SIZE = Vector2(25, 25)  # 生命值图标大小
 
 BEST_SCORE_SIZE = Vector2(200, 24)  # 最高得分显示大小
@@ -35,7 +38,7 @@ BEST_SCORE_POS = Vector2((WINDOW_SIZE[0] - BEST_SCORE_SIZE[0]) / 2, 8)  # 最高
 SCORE_SIZE = Vector2(100, 30)  # 当前得分显示大小
 SCORE_POS = Vector2((WINDOW_SIZE[0] - SCORE_SIZE[0]) / 2, 30)  # 当前得分显示位置
 
-PAUSE_POS = Vector2(645, 10)  # 暂停按钮显示位置
+PAUSE_POS = Vector2(WINDOW_SIZE[0] - 55, 10)  # 暂停按钮显示位置
 PAUSE_SIZE = Vector2(35, 35)  # 暂停按钮大小
 
 

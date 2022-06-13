@@ -3,6 +3,47 @@ from pygame.sprite import collide_mask
 from widgets import *
 
 
+class View:
+    def __init__(self, screen: Surface):
+        self.screen = screen
+
+    def get_widgets(self) -> Iterator[Union[Sprite, Group]]:
+        for v in self.__dict__.values():
+            if isinstance(v, (Sprite, Group)):
+                yield v
+
+    def draw(self):
+        for widget in self.get_widgets():
+            widget.draw()  # type: ignore
+
+
+class MenuView(View):
+    def __init__(self, screen: Surface):
+        super().__init__(screen)
+        self.icon_img = get_image("color_hit_icon.png", (300, 300))
+        self.icon_rect = self.icon_img.get_rect(centerx=WINDOW_SIZE[0] / 2, centery=200)
+        self.start_button = Button(screen, START_POS, START_SIZE, "开始")
+        self.start_button.set_callback(lambda: GameView(self.screen))
+
+        SETTING_POS = START_POS + Vector2(0, 90)
+        self.setting_button = Button(screen, SETTING_POS, START_SIZE, "设置")
+
+    def on_keydown(self, event: Event):
+        pass
+
+    def on_mousedown(self, event: Event):
+        if event.button == pg.BUTTON_LEFT:
+            self.start_button.check_click(event)
+
+    def update(self, past_sec: float):
+        self.start_button.update()
+        self.setting_button.update()
+
+    def draw(self):
+        self.screen.blit(self.icon_img, self.icon_rect)
+        super().draw()
+
+
 def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
     bullets = OrderedGruop(screen)
     for i, color in enumerate(colors):
@@ -34,17 +75,15 @@ def hit_correct_color(pin: Pin, disc: Disc) -> Union[None, bool]:
         return False
 
 
-class GameView:
+class GameView(View):
     def __init__(self, screen: Surface):
-        self.screen = screen
+        super().__init__(screen)
         self.hearts = group_heart_label(screen)
         self.best_score = read_best_score()
         self.best_score_board = Label(
-            screen, BEST_SCORE_POS, BEST_SCORE_SIZE, f"BESTSCORE  {self.best_score}"
+            screen, BEST_SCORE_POS, BEST_SCORE_SIZE, f"历史最高  {self.best_score}"
         )
-        self.best_score_board.set_style(
-            font="TabletGothicBold.OTF", fs=16, fc=TEXT_BLUE
-        )
+        self.best_score_board.set_style(font="FZPSZHUNHJW.TTF", fs=16, fc=TEXT_BLUE)
         self.score = 0
         self.score_board = Label(screen, SCORE_POS, SCORE_SIZE, f"{self.score}")
         self.score_board.set_style(font="TabletGothicBold.OTF", fs=20)
@@ -91,11 +130,6 @@ class GameView:
             self.level += 1
             self.init_level()
 
-    def get_widgets(self) -> Iterator[Union[Sprite, Group]]:
-        for v in self.__dict__.values():
-            if isinstance(v, (Sprite, Group)):
-                yield v
-
     def update(self, past_sec: float) -> bool:
         if self.pause:
             self.pause_button.update()
@@ -126,7 +160,3 @@ class GameView:
             else:
                 rewrite_best_score(self.score, self.best_score)
                 return True
-
-    def draw(self):
-        for widget in self.get_widgets():
-            widget.draw()  # type: ignore

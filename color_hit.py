@@ -1,73 +1,74 @@
 import sys
-from math import cos, radians, sin
-from random import random
 from tkinter import Tk, messagebox
 
+from pygame.event import get as get_events
+
 from utils import *
-from views import GameView, Label, os
+from views import GameView, Label, MenuView, os
 
 
-def get_back() -> tuple[Surface, Rect]:
-    background = get_image("background.png", WINDOW_SIZE)
-    theta = random() * 360
-    scale = random() + abs(cos(radians(theta))) + abs(sin(radians(theta)))
-    back = pg.transform.rotozoom(background, theta, scale)
-    back_rect = back.get_rect(center=WINDOW_SIZE / 2)
-    return back, back_rect
+class Game:
+    def __init__(self):
+        tkwindow = Tk()
+        tkwindow.wm_withdraw()
+        pg.init()
+        os.environ["SDL_VIDEO_CENTERED"] = "1"
+        pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
+        self.screen = pg.display.set_mode(WINDOW_SIZE)
+        pg.display.set_caption("Color Hit")
+        pg.display.set_icon(get_image("color_hit_icon.png"))
+        self.clock = pg.time.Clock()
 
+        self.background, self.back_rect = get_back()
+        self.view = MenuView(self.screen)
+        self.view.start_button.set_callback(self.start_game)
+        fps_size = Vector2(150, 30)
+        self.current_fps = Label(
+            self.screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"
+        )
+        self.frame = 0  # 记录帧数
 
-def run_game():
-    tkwindow = Tk()
-    tkwindow.wm_withdraw()
-    pg.init()
-    os.environ["SDL_VIDEO_CENTERED"] = "1"
-    pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
-    get_events = pg.event.get
-    screen = pg.display.set_mode(WINDOW_SIZE)
-    pg.display.set_caption("Color Hit")
-    pg.display.set_icon(get_image("color_hit_icon.png"))
-    clock = pg.time.Clock()
+    def start_game(self):
+        self.view = GameView(self.screen)
 
-    background, back_rect = get_back()
-    view = GameView(screen)
-    fps_size = Vector2(150, 30)
-    current_fps = Label(screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left")
-    frame = 0  # 记录帧数
+    def update_gameview(self, past_sec: float):
+        game_over = self.view.update(past_sec)
+        if game_over:
+            retry = messagebox.askokcancel(message="Game over! Try again?")
+            if retry:
+                self.view = GameView(self.screen)
+            else:
+                self.view = MenuView(self.screen)
+        else:
+            self.view.draw()
 
-    while True:
+    def update_frame(self):
         for event in get_events():
             if event.type == QUIT:
-                if type(view) is GameView:
-                    rewrite_best_score(view.score, view.best_score)
+                if type(self.view) is GameView:
+                    rewrite_best_score(self.view.score, self.view.best_score)
                 pg.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
-                view.on_keydown(event)
+                self.view.on_keydown(event)
             elif event.type == MOUSEBUTTONDOWN:
-                view.on_mousedown(event)
+                self.view.on_mousedown(event)
 
-        screen.blit(background, back_rect)
-        past_sec = clock.tick(FPS) / 1000
-        if type(view) is GameView:
-            game_over = view.update(past_sec)
-            if game_over:
-                retry = messagebox.askokcancel(message="Game over! Try again?")
-                if retry:
-                    view = GameView(screen)
-                else:
-                    pg.quit()
-                    sys.exit()
-            else:
-                view.draw()
-        else:
-            view.update(past_sec)
-            view.draw()
-        frame += 1
-        if frame % 20 == 0:
-            current_fps.update(f"当前帧率(fps): {clock.get_fps():.2f}")
-        current_fps.draw()
+        self.screen.blit(self.background, self.back_rect)
+        past_sec = self.clock.tick(FPS) / 1000
+        if type(self.view) is GameView:
+            self.update_gameview(past_sec)
+        elif type(self.view) is MenuView:
+            self.view.update(past_sec)
+            self.view.draw()
+        self.frame += 1
+        if self.frame % 20 == 0:
+            self.current_fps.update(f"当前帧率(fps): {self.clock.get_fps():.2f}")
+        self.current_fps.draw()
         pg.display.update()
 
 
 if __name__ == "__main__":
-    run_game()
+    game = Game()
+    while True:
+        game.update_frame()
