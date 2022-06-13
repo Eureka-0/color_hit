@@ -164,19 +164,19 @@ class Button(Sprite):
         self.callback = callback
 
     def set_back(self, radius: float, color: str):
-        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_size = (int(self.size[0] * 10), int(self.size[1] * 10))
         back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(back_image)
-        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
-        draw.rounded_rectangle(xy, radius * 100, color)
+        xy = (10, 10, back_size[0] - 10, back_size[1] - 10)
+        draw.rounded_rectangle(xy, radius * 10, color)
         self.back_image = pil2pg(back_image, self.size)
 
     def set_hover_back(self, radius: float, hover_color: str):
-        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_size = (int(self.size[0] * 10), int(self.size[1] * 10))
         back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(back_image)
-        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
-        draw.rounded_rectangle(xy, radius * 100, hover_color)
+        xy = (10, 10, back_size[0] - 10, back_size[1] - 10)
+        draw.rounded_rectangle(xy, radius * 10, hover_color)
         self.hover_back = pil2pg(back_image, self.size)
 
     def check_mouse_pos(self, mouse_pos) -> bool:
@@ -250,11 +250,11 @@ class Label(Sprite):
             self.back_image = None
 
     def set_back(self, radius: float, color: str):
-        back_size = (int(self.size[0] * 100), int(self.size[1] * 100))
+        back_size = (int(self.size[0] * 10), int(self.size[1] * 10))
         back_image = Image.new("RGBA", back_size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(back_image)
-        xy = (100, 100, back_size[0] - 100, back_size[1] - 100)
-        draw.rounded_rectangle(xy, radius * 100, color)
+        xy = (10, 10, back_size[0] - 10, back_size[1] - 10)
+        draw.rounded_rectangle(xy, radius * 10, color)
         self.back_image = pil2pg(back_image, self.size)
 
     def update(self, text: Union[str, None] = None, img_name: Union[str, None] = None):

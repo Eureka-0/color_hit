@@ -19,9 +19,9 @@ class Game:
         pg.display.set_icon(get_image("color_hit_icon.png"))
         self.clock = pg.time.Clock()
 
-        self.background, self.back_rect = get_back()
         self.view = MenuView(self.screen)
         self.view.start_button.set_callback(self.start_game)
+        self.background, self.back_rect = get_back()
         fps_size = Vector2(150, 30)
         self.current_fps = Label(
             self.screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"

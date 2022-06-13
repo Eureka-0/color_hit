@@ -17,7 +17,7 @@ FPS = 120  # 游戏最高帧率
 # 组件位置与大小，单位为像素
 WINDOW_SIZE = Vector2(600, 700)  # 主窗口大小
 
-START_SIZE = Vector2(120, 60)
+START_SIZE = Vector2(140, 60)
 START_POS = Vector2((WINDOW_SIZE[0] - START_SIZE[0]) / 2, 350)
 
 PIN_SIZE = Vector2(35, 100)  # 飞镖大小
