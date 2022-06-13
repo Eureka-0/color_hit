@@ -147,3 +147,4 @@ cython_debug/
 .DS_Store
 .vscode/
 res/best_score.json
+*.mp3
