@@ -1,6 +1,12 @@
+from random import randint
+
+import config as c
+import pygame as pg
 from pygame.sprite import collide_mask
 
-from widgets import *
+from src.typing_lib import *
+from src.utils import get_image, get_ordered_colors, read_best_score, rewrite_best_score
+from src.widgets import Balk, Bullet, Button, Disc, Label, OrderedGruop, Pie, Pin
 
 
 class View:
@@ -21,12 +27,16 @@ class MenuView(View):
     def __init__(self, screen: Surface):
         super().__init__(screen)
         self.icon_img = get_image("color_hit_icon.png", (300, 300))
-        self.icon_rect = self.icon_img.get_rect(centerx=WINDOW_SIZE[0] / 2, centery=200)
-        self.start_button = Button(screen, START_POS, START_SIZE, "开始")
-        self.start_button.set_callback(lambda: GameView(self.screen))
+        self.icon_rect = self.icon_img.get_rect(
+            centerx=c.WINDOW_SIZE[0] / 2, centery=200
+        )
+        self.start_button = Button(screen, c.START_POS, c.START_SIZE, "开始")
 
-        SETTING_POS = START_POS + Vector2(0, 90)
-        self.setting_button = Button(screen, SETTING_POS, START_SIZE, "设置")
+        setting_pos = c.START_POS + c.Vector2(0, 90)
+        self.setting_button = Button(screen, setting_pos, c.START_SIZE, "设置")
+
+        quit_pos = c.START_POS + c.Vector2(0, 180)
+        self.quit_button = Button(screen, quit_pos, c.START_SIZE, "退出")
 
     def on_keydown(self, event: Event):
         pass
@@ -34,10 +44,13 @@ class MenuView(View):
     def on_mousedown(self, event: Event):
         if event.button == pg.BUTTON_LEFT:
             self.start_button.check_click(event)
+            self.setting_button.check_click(event)
+            self.quit_button.check_click(event)
 
     def update(self, past_sec: float):
         self.start_button.update()
         self.setting_button.update()
+        self.quit_button.update()
 
     def draw(self):
         self.screen.blit(self.icon_img, self.icon_rect)
@@ -47,7 +60,7 @@ class MenuView(View):
 def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
     bullets = OrderedGruop(screen)
     for i, color in enumerate(colors):
-        pos = (BULLETS_POS[0], BULLETS_POS[1] - 3 * i * BULLET_SIZE[1])
+        pos = (c.BULLETS_POS[0], c.BULLETS_POS[1] - 3 * i * c.BULLET_SIZE[1])
         bullets.add(Bullet(screen, color, pos))
     return bullets
 
@@ -55,8 +68,8 @@ def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
 def group_heart_label(screen: Surface) -> OrderedGruop:
     hearts = OrderedGruop(screen)
     for i in range(3):
-        pos = (HEARTS_POS[0], HEARTS_POS[1] + i * HEART_SIZE[0])
-        hearts.add(Label(screen, pos, HEART_SIZE, img_name="heart.png"))
+        pos = (c.HEARTS_POS[0], c.HEARTS_POS[1] + i * c.HEART_SIZE[0])
+        hearts.add(Label(screen, pos, c.HEART_SIZE, img_name="heart.png"))
     return hearts
 
 
@@ -81,16 +94,18 @@ class GameView(View):
         self.hearts = group_heart_label(screen)
         self.best_score = read_best_score()
         self.best_score_board = Label(
-            screen, BEST_SCORE_POS, BEST_SCORE_SIZE, f"历史最高  {self.best_score}"
+            screen, c.BEST_SCORE_POS, c.BEST_SCORE_SIZE, f"历史最高  {self.best_score}"
         )
-        self.best_score_board.set_style(font="FZPSZHUNHJW.TTF", fs=16, fc=TEXT_BLUE)
+        self.best_score_board.set_style(font="FZPSZHUNHJW.TTF", fs=16, fc=c.TEXT_BLUE)
         self.score = 0
-        self.score_board = Label(screen, SCORE_POS, SCORE_SIZE, f"{self.score}")
+        self.score_board = Label(screen, c.SCORE_POS, c.SCORE_SIZE, f"{self.score}")
         self.score_board.set_style(font="TabletGothicBold.OTF", fs=20)
 
         self.pause = False
-        self.pause_button = Button(screen, PAUSE_POS, PAUSE_SIZE, img_name="pause.png")
-        self.pause_button.set_style(r=PAUSE_SIZE[0] / 2)
+        self.pause_button = Button(
+            screen, c.PAUSE_POS, c.PAUSE_SIZE, img_name="pause.png"
+        )
+        self.pause_button.set_style(r=c.PAUSE_SIZE[0] / 2)
         self.pause_button.set_callback(self.switch_pause)
 
         self.level = 1
@@ -112,15 +127,15 @@ class GameView(View):
         self.colors.pop()
 
     def on_keydown(self, event: Event):
-        if not self.pause and event.key == pg.K_SPACE and self.pin.mode == STILL:
-            self.pin.mode = SHOOT
+        if not self.pause and event.key == pg.K_SPACE and self.pin.mode == c.STILL:
+            self.pin.mode = c.SHOOT
             self.bullets.pop_widget()
 
     def on_mousedown(self, event: Event):
         if event.button == pg.BUTTON_LEFT:
             click = self.pause_button.check_click(event)
-            if not click and not self.pause and self.pin.mode == STILL:
-                self.pin.mode = SHOOT
+            if not click and not self.pause and self.pin.mode == c.STILL:
+                self.pin.mode = c.SHOOT
                 self.bullets.pop_widget()
 
     def next_pin(self):
@@ -135,19 +150,19 @@ class GameView(View):
             self.pause_button.update()
             return False
         else:
-            if self.pin.rect.top >= WINDOW_SIZE[1]:
+            if self.pin.rect.top >= c.WINDOW_SIZE[1]:
                 self.next_pin()
 
             if len(self.hearts):
-                if self.pin.mode == SHOOT:
+                if self.pin.mode == c.SHOOT:
                     correct = hit_correct_color(self.pin, self.disc)
                     if correct:
-                        self.pin.mode = PRICK
+                        self.pin.mode = c.PRICK
                         self.disc.add(self.pin)
                         self.score += randint(10, 15)
                         self.next_pin()
                     elif correct is False:
-                        self.pin.mode = DROP
+                        self.pin.mode = c.DROP
                         self.hearts.pop_widget()
 
                 self.pin.update(past_sec)

@@ -1,9 +1,12 @@
-from typing import Callable
+import os
 
+import config as c
+import pygame as pg
 import pygame.font as pf
 from PIL import Image, ImageDraw
 
-from utils import *
+from src.typing_lib import *
+from src.utils import draw_border, get_image, is_or_in, pil2pg, plus_angle, rotate
 
 
 class _Content:
@@ -46,7 +49,7 @@ class _Content:
         img_size: Vect2,
         img_align: str,
     ):
-        self.font = pf.Font(pjoin("font", font), fontsize)
+        self.font = pf.Font(os.path.join("font", font), fontsize)
         self.fontcolor = fontcolor
         self.text_align = text_align
         self.img_size = img_size
@@ -109,14 +112,14 @@ class _Style(dict):
 class Button(Sprite):
     default_style = {
         ("radius", "r"): None,
-        ("background", "bg"): BUTTON_GREEN,
-        ("hover_back", "hb"): BUTTON_HOVER_GREEN,
+        ("background", "bg"): c.BUTTON_GREEN,
+        ("hover_back", "hb"): c.BUTTON_HOVER_GREEN,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): PIE_RED,
+        ("border_color", "bc"): c.PIE_RED,
         ("border_radius", "br"): 0,
         "font": "FZKATJW.TTF",
         ("fontsize", "fs"): 36,
-        ("fontcolor", "fc"): TEXT_WHITE,
+        ("fontcolor", "fc"): c.TEXT_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -212,11 +215,11 @@ class Label(Sprite):
         ("radius", "r"): 0,
         ("background", "bg"): None,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): PIE_RED,
+        ("border_color", "bc"): c.PIE_RED,
         ("border_radius", "br"): 0,
         "font": "FZPSZHUNHJW.TTF",
         ("fontsize", "fs"): 16,
-        ("fontcolor", "fc"): TEXT_WHITE,
+        ("fontcolor", "fc"): c.TEXT_WHITE,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -275,17 +278,17 @@ class Pin(Sprite):
         self.color = color
         self.set_image()
         self.rect: Rect = self.image.get_rect(
-            centerx=WINDOW_SIZE[0] // 2, bottom=WINDOW_SIZE[1] - 20
+            centerx=c.WINDOW_SIZE[0] // 2, bottom=c.WINDOW_SIZE[1] - 20
         )
-        self.mode = STILL
+        self.mode = c.STILL
         self.angle: float = 0
 
     def set_image(self):
-        image = Image.open(pjoin("img", "pin.png"))
+        image = Image.open(os.path.join("img", "pin.png"))
         draw = ImageDraw.Draw(image)
         imgsize = image.size
         size = (450, 1800)
-        w = MARGINAL_WIDTH * imgsize[0] / PIN_SIZE[0]
+        w = c.MARGINAL_WIDTH * imgsize[0] / c.PIN_SIZE[0]
         xy = (
             w + 125,
             imgsize[1] - 100 - size[0] + w,
@@ -293,21 +296,21 @@ class Pin(Sprite):
             imgsize[1] - 100 - w,
         )
         draw.ellipse(xy, fill=self.color)
-        self.origin_image = pil2pg(image, PIN_SIZE)
+        self.origin_image = pil2pg(image, c.PIN_SIZE)
         self.image: Surface = self.origin_image.copy()
 
     def update(self, delta: float):
-        if self.mode == SHOOT:
-            self.rect.centery -= round(SHOOT_SPEED * delta)
-        elif self.mode == PRICK:
+        if self.mode == c.SHOOT:
+            self.rect.centery -= round(c.SHOOT_SPEED * delta)
+        elif self.mode == c.PRICK:
             self.angle = plus_angle(self.angle, delta)
-            relative_pos = Vector2(PIN_SIZE[0] / 2, PRICK_DEPTH - RADIUS)
+            relative_pos = c.Vector2(c.PIN_SIZE[0] / 2, c.PRICK_DEPTH - c.RADIUS)
             self.image, self.rect = rotate(
-                self.origin_image, self.angle, CENTER, relative_pos
+                self.origin_image, self.angle, c.CENTER, relative_pos
             )
-        elif self.mode == DROP:
-            self.rect.centery += round(DROP_SPEED * delta)
-            self.rect.centerx += round(DROP_SPEED * delta) // 2
+        elif self.mode == c.DROP:
+            self.rect.centery += round(c.DROP_SPEED * delta)
+            self.rect.centerx += round(c.DROP_SPEED * delta) // 2
 
     def draw(self):
         self.screen.blit(self.image, self.rect)
@@ -321,7 +324,7 @@ class Pie(Sprite):
         self.screen = screen
         self.color = color
         self.set_image(start_degree, degree_range)
-        self.rect: Rect = self.image.get_rect(center=CENTER)
+        self.rect: Rect = self.image.get_rect(center=c.CENTER)
         self.angle: float = 0
 
     def set_image(self, start_degree: float, degree_range: float):
@@ -331,13 +334,13 @@ class Pie(Sprite):
         xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
         end = start_degree + degree_range
         draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        self.origin_image = pil2pg(image, (2 * RADIUS, 2 * RADIUS))
+        self.origin_image = pil2pg(image, (2 * c.RADIUS, 2 * c.RADIUS))
         self.image: Surface = self.origin_image.copy()
 
     def update(self, theta: float):
         self.angle = plus_angle(self.angle, theta)
         self.image, self.rect = rotate(
-            self.origin_image, self.angle, CENTER, (RADIUS, RADIUS)
+            self.origin_image, self.angle, c.CENTER, (c.RADIUS, c.RADIUS)
         )
 
     def draw(self):
@@ -369,7 +372,7 @@ class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
         super().__init__(*_get_pies(screen, set(colors)))
 
-    def sorted_sprites(self):
+    def sorted_sprites(self) -> list[Sprite]:
         sorted_sprites = []
         for spr in self.sprites():
             if type(spr) is Pie:
@@ -382,7 +385,7 @@ class Disc(Group):
         return iter(self.sorted_sprites())
 
     def update(self, past_sec: float):
-        theta = ROTATION_SPEED * past_sec
+        theta = c.ROTATION_SPEED * past_sec
         for spr in self:
             spr.update(theta)
 
@@ -396,14 +399,14 @@ class Bullet(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.rect: Rect = Rect(pos[0], pos[1], BULLET_SIZE[0], BULLET_SIZE[1])
+        self.rect: Rect = Rect(pos[0], pos[1], c.BULLET_SIZE[0], c.BULLET_SIZE[1])
 
     def draw(self):
         pg.draw.rect(self.screen, self.color, self.rect)
 
 
 class OrderedGruop(Group):
-    def __init__(self, screen, *sprites):
+    def __init__(self, screen: Surface, *sprites):
         self.screen = screen
         self.widget_list = []
         super().__init__(*sprites)
@@ -419,5 +422,5 @@ class OrderedGruop(Group):
         self.remove(self.widget_list.pop())
 
     def draw(self):
-        for spr in self:
-            spr.draw()  # type: ignore
+        for sprite in self:
+            sprite.draw()  # type: ignore

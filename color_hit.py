@@ -1,10 +1,14 @@
+import os
 import sys
 from tkinter import Tk, messagebox
 
+import pygame as pg
+from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import get as get_events
 
-from utils import *
-from views import GameView, Label, MenuView, os
+import config as c
+from src.utils import get_back, get_image, quit_game, rewrite_best_score
+from src.views import GameView, Label, MenuView
 
 
 class Game:
@@ -14,21 +18,25 @@ class Game:
         pg.init()
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
-        self.screen = pg.display.set_mode(WINDOW_SIZE)
+        self.screen = pg.display.set_mode(c.WINDOW_SIZE)
         pg.display.set_caption("Color Hit")
         pg.display.set_icon(get_image("color_hit_icon.png"))
         self.clock = pg.time.Clock()
 
-        self.view = MenuView(self.screen)
-        self.view.start_button.set_callback(self.start_game)
+        self.init_menu()
         self.background, self.back_rect = get_back()
-        fps_size = Vector2(150, 30)
+        fps_size = c.Vector2(150, 30)
         self.current_fps = Label(
-            self.screen, WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"
+            self.screen, c.WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"
         )
         self.frame = 0  # 记录帧数
 
-    def start_game(self):
+    def init_menu(self):
+        self.view = MenuView(self.screen)
+        self.view.start_button.set_callback(self.init_game)
+        self.view.quit_button.set_callback(quit_game)
+
+    def init_game(self):
         self.view = GameView(self.screen)
 
     def update_gameview(self, past_sec: float):
@@ -38,7 +46,7 @@ class Game:
             if retry:
                 self.view = GameView(self.screen)
             else:
-                self.view = MenuView(self.screen)
+                self.init_menu()
         else:
             self.view.draw()
 
@@ -47,20 +55,20 @@ class Game:
             if event.type == QUIT:
                 if type(self.view) is GameView:
                     rewrite_best_score(self.view.score, self.view.best_score)
-                pg.quit()
-                sys.exit()
+                quit_game()
             elif event.type == KEYDOWN:
                 self.view.on_keydown(event)
             elif event.type == MOUSEBUTTONDOWN:
                 self.view.on_mousedown(event)
 
         self.screen.blit(self.background, self.back_rect)
-        past_sec = self.clock.tick(FPS) / 1000
-        if type(self.view) is GameView:
-            self.update_gameview(past_sec)
-        elif type(self.view) is MenuView:
+        past_sec = self.clock.tick(c.FPS) / 1000
+        if type(self.view) is MenuView:
             self.view.update(past_sec)
             self.view.draw()
+        elif type(self.view) is GameView:
+            self.update_gameview(past_sec)
+
         self.frame += 1
         if self.frame % 20 == 0:
             self.current_fps.update(f"当前帧率(fps): {self.clock.get_fps():.2f}")

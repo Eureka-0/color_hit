@@ -1,16 +1,17 @@
 import json
 import os
+import sys
 from functools import reduce
 from math import cos, radians, sin
-from os.path import join as pjoin
 from random import randint, random, sample, shuffle
 
+import config as c
 import pygame as pg
 
-from config import *
+from src.typing_lib import *
 
 
-def is_or_in(k: str, key: tuple[str, tuple[str, str]]) -> bool:
+def is_or_in(k: str, key: Union[str, tuple[str, str]]) -> bool:
     if type(key) is str:
         if k == key:
             return True
@@ -29,7 +30,7 @@ def plus_angle(angle: float, theta: float) -> float:
 
 
 def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
-    image = pg.image.load(pjoin("img", img_name)).convert_alpha()
+    image = pg.image.load(os.path.join("img", img_name)).convert_alpha()
     return pg.transform.smoothscale(image, img_size) if img_size else image
 
 
@@ -64,7 +65,7 @@ def expand_colors(colors: list[str], num: list[int]) -> list[str]:
 
 def rand_colors(num: int) -> list[str]:
     if 1 <= num <= 4:
-        colors = list(COLORS)
+        colors = list(c.COLORS)
         shuffle(colors)
         return colors[0:num]
     else:
@@ -72,12 +73,12 @@ def rand_colors(num: int) -> list[str]:
 
 
 def rand_num(n: int) -> list[int]:
-    sam = [0] + sample(range(1, PIN_NUM), n - 1) + [PIN_NUM]
+    sam = [0] + sample(range(1, c.PIN_NUM), n - 1) + [c.PIN_NUM]
     sam.sort()
     num = [sam[i + 1] - sam[i] for i in range(n)]
-    upper = round(PIN_NUM / n) + 2
+    upper = round(c.PIN_NUM / n) + 2
     while max(num) > upper:
-        sam = [0] + sample(range(1, PIN_NUM), n - 1) + [PIN_NUM]
+        sam = [0] + sample(range(1, c.PIN_NUM), n - 1) + [c.PIN_NUM]
         sam.sort()
         num = [sam[i + 1] - sam[i] for i in range(n)]
     return num
@@ -100,7 +101,7 @@ def get_ordered_colors(level: int) -> list[str]:
 
 
 def read_best_score() -> int:
-    best_score = pjoin("res", "best_score.json")
+    best_score = os.path.join("res", "best_score.json")
     if not os.path.exists(best_score):
         with open(best_score, "w", encoding="utf-8") as f:
             json.dump({"best_score": 0}, f, indent=4)
@@ -111,15 +112,20 @@ def read_best_score() -> int:
 
 def rewrite_best_score(score, best_score):
     if score > best_score:
-        with open(pjoin("res", "best_score.json"), "w", encoding="utf-8") as f:
+        with open(os.path.join("res", "best_score.json"), "w", encoding="utf-8") as f:
             json.dump({"best_score": score}, f, indent=4)
 
 
 def get_back() -> tuple[Surface, Rect]:
-    s = max(WINDOW_SIZE[0], WINDOW_SIZE[1])
+    s = max(c.WINDOW_SIZE[0], c.WINDOW_SIZE[1])
     background = get_image("background.png", (s, s))
     theta = random() * 360
     scale = random() + abs(cos(radians(theta))) + abs(sin(radians(theta)))
     back = pg.transform.rotozoom(background, theta, scale)
-    back_rect = back.get_rect(center=WINDOW_SIZE / 2)
+    back_rect = back.get_rect(center=c.WINDOW_SIZE / 2)
     return back, back_rect
+
+
+def quit_game():
+    pg.quit()
+    sys.exit()
