@@ -1,7 +1,7 @@
 import os
-import sys
 from tkinter import Tk, messagebox
 
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame as pg
 from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import get as get_events

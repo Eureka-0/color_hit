@@ -101,7 +101,9 @@ def get_ordered_colors(level: int) -> list[str]:
 
 
 def read_best_score() -> int:
-    best_score = os.path.join("res", "best_score.json")
+    best_score = os.path.join("data", "best_score.json")
+    if not os.path.exists("data"):
+        os.mkdir("data")
     if not os.path.exists(best_score):
         with open(best_score, "w", encoding="utf-8") as f:
             json.dump({"best_score": 0}, f, indent=4)
@@ -112,7 +114,8 @@ def read_best_score() -> int:
 
 def rewrite_best_score(score, best_score):
     if score > best_score:
-        with open(os.path.join("res", "best_score.json"), "w", encoding="utf-8") as f:
+        fn = os.path.join("data", "best_score.json")
+        with open(fn, "w", encoding="utf-8") as f:
             json.dump({"best_score": score}, f, indent=4)
 
 
