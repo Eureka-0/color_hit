@@ -1,8 +1,10 @@
 import os
+from random import randint
 
 import config as c
 import pygame as pg
 import pygame.font as pf
+from config import Grid
 from PIL import Image, ImageDraw
 
 from src.typing_lib import *
@@ -278,17 +280,20 @@ class Pin(Sprite):
         self.color = color
         self.set_image()
         self.rect: Rect = self.image.get_rect(
-            centerx=c.WINDOW_SIZE[0] // 2, bottom=c.WINDOW_SIZE[1] - 20
+            centerx=Grid.WINDOW_SIZE[0] // 2, bottom=Grid.WINDOW_SIZE[1] - 20
         )
         self.mode = c.STILL
         self.angle: float = 0
+        self.relative_pos = Vector2(
+            Grid.PIN_SIZE[0] / 2, Grid.PRICK_DEPTH - Grid.RADIUS
+        )
 
     def set_image(self):
         image = Image.open(os.path.join("img", "pin.png"))
         draw = ImageDraw.Draw(image)
         imgsize = image.size
         size = (450, 1800)
-        w = c.MARGINAL_WIDTH * imgsize[0] / c.PIN_SIZE[0]
+        w = Grid.MARGINAL_WIDTH * imgsize[0] / Grid.PIN_SIZE[0]
         xy = (
             w + 125,
             imgsize[1] - 100 - size[0] + w,
@@ -296,18 +301,12 @@ class Pin(Sprite):
             imgsize[1] - 100 - w,
         )
         draw.ellipse(xy, fill=self.color)
-        self.origin_image = pil2pg(image, c.PIN_SIZE)
+        self.origin_image = pil2pg(image, Grid.PIN_SIZE)
         self.image: Surface = self.origin_image.copy()
 
     def update(self, delta: float):
         if self.mode == c.SHOOT:
             self.rect.centery -= round(c.SHOOT_SPEED * delta)
-        elif self.mode == c.PRICK:
-            self.angle = plus_angle(self.angle, delta)
-            relative_pos = c.Vector2(c.PIN_SIZE[0] / 2, c.PRICK_DEPTH - c.RADIUS)
-            self.image, self.rect = rotate(
-                self.origin_image, self.angle, c.CENTER, relative_pos
-            )
         elif self.mode == c.DROP:
             self.rect.centery += round(c.DROP_SPEED * delta)
             self.rect.centerx += round(c.DROP_SPEED * delta) // 2
@@ -324,8 +323,8 @@ class Pie(Sprite):
         self.screen = screen
         self.color = color
         self.set_image(start_degree, degree_range)
-        self.rect: Rect = self.image.get_rect(center=c.CENTER)
         self.angle: float = 0
+        self.relative_pos = (Grid.RADIUS, Grid.RADIUS)
 
     def set_image(self, start_degree: float, degree_range: float):
         size = (2200, 2200)
@@ -334,14 +333,9 @@ class Pie(Sprite):
         xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
         end = start_degree + degree_range
         draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        self.origin_image = pil2pg(image, (2 * c.RADIUS, 2 * c.RADIUS))
+        self.origin_image = pil2pg(image, (2 * Grid.RADIUS, 2 * Grid.RADIUS))
         self.image: Surface = self.origin_image.copy()
-
-    def update(self, theta: float):
-        self.angle = plus_angle(self.angle, theta)
-        self.image, self.rect = rotate(
-            self.origin_image, self.angle, c.CENTER, (c.RADIUS, c.RADIUS)
-        )
+        self.rect: Rect = self.image.get_rect(center=Grid.CENTER)
 
     def draw(self):
         self.screen.blit(self.image, self.rect)
@@ -354,9 +348,36 @@ class Balk(Sprite):
 
 
 class Bonus(Sprite):
-    def __init__(self, screen: Surface, disc: Group):
+    def __init__(self, screen: Surface, disc: Group, angle: float, relative_pos: Vect2):
         super().__init__(disc)
         self.screen = screen
+        self.angle = angle
+        self.relative_pos = relative_pos
+
+    def set_image(self, image: Surface):
+        self.origin_image = image
+        self.image: Surface = self.origin_image.copy()
+        self.rect: Rect = self.image.get_rect(
+            centerx=Grid.CENTER[0], top=Grid.CENTER[1] + self.relative_pos[1]
+        )
+
+    def set_bonusfunc(self, bonusfunc: Callable):
+        self.bonusfunc = bonusfunc
+
+    def on_hit(self, *args, **kwargs):
+        self.kill()
+        self.bonusfunc(*args, **kwargs)
+
+    def draw(self):
+        self.screen.blit(self.image, self.rect)
+
+
+class Heart(Bonus):
+    def __init__(self, screen: Surface, disc: Group, angle: float):
+        relative_pos = (Grid.HEART_BONUS_SIZE[0] // 2, -Grid.HEART_BONUS_RADIUS)
+        super().__init__(screen, disc, angle, relative_pos)
+        image = get_image("heart.png", Grid.HEART_BONUS_SIZE)
+        super().set_image(pg.transform.rotozoom(image, 180, 1))
 
 
 def _get_pies(screen: Surface, colors: set) -> list[Pie]:
@@ -371,8 +392,10 @@ def _get_pies(screen: Surface, colors: set) -> list[Pie]:
 class Disc(Group):
     def __init__(self, screen: Surface, colors: list):
         super().__init__(*_get_pies(screen, set(colors)))
+        if randint(0, 1):
+            self.heart = Heart(screen, self, randint(0, 360))
 
-    def sorted_sprites(self) -> list[Sprite]:
+    def sorted_sprites(self) -> list[Union[Pin, Pie, Bonus]]:
         sorted_sprites = []
         for spr in self.sprites():
             if type(spr) is Pie:
@@ -381,17 +404,22 @@ class Disc(Group):
                 sorted_sprites.insert(0, spr)
         return sorted_sprites
 
-    def __iter__(self) -> Iterator[Sprite]:
+    def __iter__(self) -> Iterator[Union[Pin, Pie, Bonus]]:
         return iter(self.sorted_sprites())
 
     def update(self, past_sec: float):
         theta = c.ROTATION_SPEED * past_sec
-        for spr in self:
-            spr.update(theta)
+        for sprite in self:
+            sprite.angle = plus_angle(sprite.angle, theta)
+            sprite.image, sprite.rect = rotate(
+                sprite.origin_image, sprite.angle, Grid.CENTER, sprite.relative_pos
+            )
+            if hasattr(sprite, "update"):
+                sprite.update(theta)
 
     def draw(self):
-        for spr in self:
-            spr.draw()  # type: ignore
+        for sprite in self:
+            sprite.draw()
 
 
 class Bullet(Sprite):
@@ -399,7 +427,7 @@ class Bullet(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.rect: Rect = Rect(pos[0], pos[1], c.BULLET_SIZE[0], c.BULLET_SIZE[1])
+        self.rect: Rect = Rect(pos[0], pos[1], Grid.BULLET_SIZE[0], Grid.BULLET_SIZE[1])
 
     def draw(self):
         pg.draw.rect(self.screen, self.color, self.rect)
@@ -415,7 +443,7 @@ class OrderedGruop(Group):
         super().add(*sprites)
         self.widget_list.extend(sprites)
 
-    def __iter__(self) -> Iterator[Sprite]:
+    def __iter__(self) -> Iterator[Union[Bullet, Label]]:
         return iter(self.widget_list)
 
     def pop_widget(self):
@@ -423,4 +451,18 @@ class OrderedGruop(Group):
 
     def draw(self):
         for sprite in self:
-            sprite.draw()  # type: ignore
+            sprite.draw()
+
+
+__all__ = [
+    "Button",
+    "Label",
+    "Pin",
+    "Pie",
+    "Balk",
+    "Bonus",
+    "Heart",
+    "Disc",
+    "Bullet",
+    "OrderedGruop",
+]

@@ -7,6 +7,7 @@ from random import randint, random, sample, shuffle
 
 import config as c
 import pygame as pg
+from config import Grid
 
 from src.typing_lib import *
 
@@ -120,12 +121,12 @@ def rewrite_best_score(score, best_score):
 
 
 def get_back() -> tuple[Surface, Rect]:
-    s = max(c.WINDOW_SIZE[0], c.WINDOW_SIZE[1])
+    s = max(Grid.WINDOW_SIZE[0], Grid.WINDOW_SIZE[1])
     background = get_image("background.png", (s, s))
     theta = random() * 360
     scale = random() + abs(cos(radians(theta))) + abs(sin(radians(theta)))
     back = pg.transform.rotozoom(background, theta, scale)
-    back_rect = back.get_rect(center=c.WINDOW_SIZE / 2)
+    back_rect = back.get_rect(center=Grid.WINDOW_SIZE / 2)
     return back, back_rect
 
 

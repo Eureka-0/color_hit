@@ -7,6 +7,7 @@ from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import get as get_events
 
 import config as c
+from config import Grid
 from src.utils import get_back, get_image, quit_game, rewrite_best_score
 from src.views import GameView, Label, MenuView
 
@@ -18,7 +19,7 @@ class Game:
         pg.init()
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pg.event.set_allowed([QUIT, KEYDOWN, MOUSEBUTTONDOWN])
-        self.screen = pg.display.set_mode(c.WINDOW_SIZE)
+        self.screen = pg.display.set_mode(Grid.WINDOW_SIZE)
         pg.display.set_caption("Color Hit")
         pg.display.set_icon(get_image("color_hit_icon.png"))
         self.clock = pg.time.Clock()
@@ -27,7 +28,7 @@ class Game:
         self.background, self.back_rect = get_back()
         fps_size = c.Vector2(150, 30)
         self.current_fps = Label(
-            self.screen, c.WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"
+            self.screen, Grid.WINDOW_SIZE - fps_size, fps_size, "", fs=14, ta="left"
         )
         self.frame = 0  # 记录帧数
 
