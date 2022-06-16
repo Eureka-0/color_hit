@@ -6,7 +6,7 @@ from config import Grid
 from pygame.sprite import collide_mask
 
 from src.typing_lib import *
-from src.utils import get_image, get_ordered_colors, read_best_score, rewrite_best_score
+from src.utils import get_image, ordered_colors, read_best_score, rewrite_best_score
 from src.widgets import *
 
 
@@ -134,11 +134,12 @@ class GameView(View):
             self.pause_button.update(img_name="go_on.png")
 
     def init_level(self):
-        self.colors = get_ordered_colors(self.level)
+        self.colors = ordered_colors(self.level)
         self.pin = Pin(self.screen, self.colors[-1])
-        self.disc = Disc(self.screen, self.colors)
-        if hasattr(self.disc, "heart"):
-            self.disc.heart.set_bonusfunc(self.plus_one_heart)
+        self.disc = Disc(self.screen, self.colors, self.level)
+        if hasattr(self.disc, "hearts"):
+            for heart in self.disc.hearts:
+                heart.set_bonusfunc(self.plus_one_heart)
         self.bullets = group_bullets(self.screen, self.colors)
         self.colors.pop()
 

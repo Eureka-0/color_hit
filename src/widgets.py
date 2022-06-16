@@ -1,5 +1,5 @@
 import os
-from random import randint
+from random import randint, sample
 
 import config as c
 import pygame as pg
@@ -8,7 +8,28 @@ from config import Grid
 from PIL import Image, ImageDraw
 
 from src.typing_lib import *
-from src.utils import draw_border, get_image, is_or_in, pil2pg, plus_angle, rotate
+from src.utils import (
+    draw_border,
+    get_image,
+    is_or_in,
+    min_diff,
+    pil2pg,
+    rand_num,
+    rotate,
+)
+
+__all__ = [
+    "Button",
+    "Label",
+    "Pin",
+    "Pie",
+    "Balk",
+    "Bonus",
+    "Heart",
+    "Disc",
+    "Bullet",
+    "OrderedGruop",
+]
 
 
 class _Content:
@@ -342,9 +363,17 @@ class Pie(Sprite):
 
 
 class Balk(Sprite):
-    def __init__(self, screen: Surface, disc: Group):
+    def __init__(self, screen: Surface, disc: Group, angle: float):
         super().__init__(disc)
         self.screen = screen
+        self.origin_image = get_image("balk.png", Grid.BALK_SIZE)
+        self.image: Surface = self.origin_image.copy()
+        self.rect: Rect = self.image.get_rect()
+        self.angle = angle
+        self.relative_pos = (Grid.BALK_SIZE[0] // 2, -Grid.BALK_RADIUS)
+
+    def draw(self):
+        self.screen.blit(self.image, self.rect)
 
 
 class Bonus(Sprite):
@@ -357,9 +386,7 @@ class Bonus(Sprite):
     def set_image(self, image: Surface):
         self.origin_image = image
         self.image: Surface = self.origin_image.copy()
-        self.rect: Rect = self.image.get_rect(
-            centerx=Grid.CENTER[0], top=Grid.CENTER[1] + self.relative_pos[1]
-        )
+        self.rect: Rect = self.image.get_rect()
 
     def set_bonusfunc(self, bonusfunc: Callable):
         self.bonusfunc = bonusfunc
@@ -380,20 +407,49 @@ class Heart(Bonus):
         super().set_image(pg.transform.rotozoom(image, 180, 1))
 
 
-def _get_pies(screen: Surface, colors: set) -> list[Pie]:
-    sector_degree = 360 / len(colors)
-    pies = []
-    for i, color in enumerate(colors):
-        start_degree = i * sector_degree
-        pies.append(Pie(screen, color, start_degree, sector_degree))
-    return pies
-
-
 class Disc(Group):
-    def __init__(self, screen: Surface, colors: list):
-        super().__init__(*_get_pies(screen, set(colors)))
-        if randint(0, 1):
-            self.heart = Heart(screen, self, randint(0, 360))
+    def __init__(self, screen: Surface, colors: list, level: int):
+        super().__init__()
+        self.screen = screen
+        self.diff_colors = set(colors)
+        self.level = level
+        num_of_balks = self.get_num_of_balks(colors)
+        self.add(*self.get_pies_balks(num_of_balks))
+
+        num_of_bonus = randint(0, 3)
+        if num_of_bonus:
+            self.hearts = []
+            pos = sample(range(360), num_of_bonus)
+            for p in pos:
+                self.hearts.append(Heart(screen, self, p))
+
+    def get_num_of_balks(self, colors: list[str]):
+        n = len(self.diff_colors)
+        num_of_bullets = [colors.count(color) for color in self.diff_colors]
+        upper_of_balks = min(8, self.level)
+        total_num_of_balks = randint(max(0, upper_of_balks - 4), upper_of_balks)
+        num_of_balks = rand_num(n, total_num_of_balks + n, False)
+        num_of_balks = [n - 1 for n in num_of_balks]
+        while max(n1 + n2 for n1, n2 in zip(num_of_bullets, num_of_balks)) >= 36 / n:
+            num_of_balks = rand_num(n, total_num_of_balks + n, False)
+            num_of_balks = [n - 1 for n in num_of_balks]
+        return num_of_balks
+
+    def get_pies_balks(self, balks: list[int]) -> list[Union[Pie, Balk]]:
+        sector_degree = 360 / len(self.diff_colors)
+        pies_balks = []
+        for i, color in enumerate(self.diff_colors):
+            start_degree = i * sector_degree
+            pies_balks.append(Pie(self.screen, color, start_degree, sector_degree))
+            end_degree = start_degree + sector_degree
+            sample_seq = range(int(start_degree) + 5, int(end_degree) - 5)
+            pos = sample(sample_seq, balks[i])
+            if balks[i] > 1:
+                while min_diff(pos) < 15:
+                    pos = sample(sample_seq, balks[i])
+            for p in pos:
+                pies_balks.append(Balk(self.screen, self, p))
+        return pies_balks
 
     def sorted_sprites(self) -> list[Union[Pin, Pie, Bonus]]:
         sorted_sprites = []
@@ -410,7 +466,7 @@ class Disc(Group):
     def update(self, past_sec: float):
         theta = c.ROTATION_SPEED * past_sec
         for sprite in self:
-            sprite.angle = plus_angle(sprite.angle, theta)
+            sprite.angle = (sprite.angle + theta) % 360
             sprite.image, sprite.rect = rotate(
                 sprite.origin_image, sprite.angle, Grid.CENTER, sprite.relative_pos
             )
@@ -452,17 +508,3 @@ class OrderedGruop(Group):
     def draw(self):
         for sprite in self:
             sprite.draw()
-
-
-__all__ = [
-    "Button",
-    "Label",
-    "Pin",
-    "Pie",
-    "Balk",
-    "Bonus",
-    "Heart",
-    "Disc",
-    "Bullet",
-    "OrderedGruop",
-]

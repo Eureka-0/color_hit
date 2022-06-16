@@ -13,13 +13,16 @@ class Grid:
 
     PIN_SIZE = Vector2(35, 100)  # 飞镖大小
     MARGINAL_WIDTH = 3  # 飞镖圆形头部边缘宽度
-    PRICK_DEPTH = 60  # 飞镖扎入深度
+    PRICK_DEPTH = 45  # 飞镖扎入深度
 
     CENTER = Vector2(WINDOW_SIZE[0] / 2, 260)  # color disc 圆心位置
     RADIUS = 120  # color disc 半径
 
+    BALK_SIZE = Vector2(78, 78)  # 障碍物大小
+    BALK_RADIUS = RADIUS - 20  # 障碍物旋转半径
+
     HEART_BONUS_SIZE = Vector2(40, 40)  # 心形道具显示大小
-    HEART_BONUS_RADIUS = RADIUS - 10  # 心形道具旋转半径
+    HEART_BONUS_RADIUS = RADIUS  # 心形道具旋转半径
 
     BULLETS_POS = Vector2(50, 500)  # 剩余飞镖的显示位置
     BULLET_SIZE = Vector2(20, 4)  # 剩余飞镖图标大小
@@ -65,4 +68,4 @@ SHOOT_SPEED = 2500  # 飞镖飞行速度
 DROP_SPEED = 500  # 飞镖掉落速度
 
 
-PIN_NUM = 8  # 两关之后的飞镖总数，8 ~ 12
+PIN_NUM = 10  # 两关之后的飞镖总数，8 ~ 12

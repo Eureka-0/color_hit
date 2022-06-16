@@ -26,10 +26,6 @@ def draw_border(screen: Surface, rect: Rect, color: str, width: int, radius: int
         pg.draw.rect(screen, color, rect, width=width, border_radius=radius)
 
 
-def plus_angle(angle: float, theta: float) -> float:
-    return (angle + theta) % 360
-
-
 def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
     image = pg.image.load(os.path.join("img", img_name)).convert_alpha()
     return pg.transform.smoothscale(image, img_size) if img_size else image
@@ -73,32 +69,41 @@ def rand_colors(num: int) -> list[str]:
         return ["#000000"]
 
 
-def rand_num(n: int) -> list[int]:
-    sam = [0] + sample(range(1, c.PIN_NUM), n - 1) + [c.PIN_NUM]
+def rand_num(n: int, fixed_sum: int, upper: bool = True) -> list[int]:
+    sam = [0] + sample(range(1, fixed_sum), n - 1) + [fixed_sum]
     sam.sort()
     num = [sam[i + 1] - sam[i] for i in range(n)]
-    upper = round(c.PIN_NUM / n) + 2
-    while max(num) > upper:
-        sam = [0] + sample(range(1, c.PIN_NUM), n - 1) + [c.PIN_NUM]
-        sam.sort()
-        num = [sam[i + 1] - sam[i] for i in range(n)]
+    if upper:
+        up = round(fixed_sum / n) + 2
+        while max(num) > up:
+            sam = [0] + sample(range(1, fixed_sum), n - 1) + [fixed_sum]
+            sam.sort()
+            num = [sam[i + 1] - sam[i] for i in range(n)]
     return num
 
 
-def get_ordered_colors(level: int) -> list[str]:
-    if 1 <= level <= 2:
-        colors = rand_colors(1)
-        num = [randint(2 * level + 1, 2 * level + 3)]
-    elif 3 <= level <= 4:
-        colors = rand_colors(2)
-        num = rand_num(2)
-    elif 5 <= level <= 7:
-        colors = rand_colors(3)
-        num = rand_num(3)
+def ordered_colors(level: int) -> list[str]:
+    x = random()
+    if 0 <= x < (level + 11) / (16 * level):
+        num_of_pies = 1
+    elif (level + 11) / (16 * level) <= x < (5 * level + 11) / (16 * level):
+        num_of_pies = 2
+    elif (5 * level + 11) / (16 * level) <= x < (11 * level + 5) / (16 * level):
+        num_of_pies = 3
     else:
-        colors = rand_colors(4)
-        num = rand_num(4)
-    return expand_colors(colors, num)
+        num_of_pies = 4
+    colors = rand_colors(num_of_pies)
+    num_of_bullets = rand_num(num_of_pies, c.PIN_NUM - randint(0, 4))
+    return expand_colors(colors, num_of_bullets)
+
+
+def min_diff(l: list) -> float:
+    l.sort()
+    diff = l[-1]
+    for i in range(len(l) - 1):
+        if l[i + 1] - l[i] < diff:
+            diff = l[i + 1] - l[i]
+    return diff
 
 
 def read_best_score() -> int:
