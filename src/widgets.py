@@ -1,10 +1,9 @@
 import os
 from random import randint, random, sample
 
-import config as c
 import pygame as pg
 import pygame.font as pf
-from config import Grid
+from config import DROP, SHOOT, STILL, Color, Grid
 from PIL import Image, ImageDraw
 
 from src.typing_lib import *
@@ -136,14 +135,14 @@ class _Style(dict):
 class Button(Sprite):
     default_style = {
         ("radius", "r"): None,
-        ("background", "bg"): c.BUTTON_GREEN,
-        ("hover_back", "hb"): c.BUTTON_HOVER_GREEN,
+        ("background", "bg"): Color.lime_green,
+        ("hover_back", "hb"): Color.dark_green,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): c.PIE_RED,
+        ("border_color", "bc"): Color.light_red,
         ("border_radius", "br"): 0,
         "font": "FZKATJW.TTF",
         ("fontsize", "fs"): 36,
-        ("fontcolor", "fc"): c.TEXT_WHITE,
+        ("fontcolor", "fc"): Color.white,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -239,11 +238,11 @@ class Label(Sprite):
         ("radius", "r"): 0,
         ("background", "bg"): None,
         ("border_width", "bw"): 0,
-        ("border_color", "bc"): c.PIE_RED,
+        ("border_color", "bc"): Color.light_red,
         ("border_radius", "br"): 0,
         "font": "FZPSZHUNHJW.TTF",
         ("fontsize", "fs"): 16,
-        ("fontcolor", "fc"): c.TEXT_WHITE,
+        ("fontcolor", "fc"): Color.white,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
         ("img_align", "ma"): "center",
@@ -302,12 +301,12 @@ class Pin(Sprite):
         self.color = color
         self.set_image()
         self.rect: Rect = self.image.get_rect(
-            centerx=Grid.WINDOW_SIZE[0] // 2, bottom=Grid.WINDOW_SIZE[1] - 20
+            centerx=Grid.window_size[0] // 2, bottom=Grid.window_size[1] - 20
         )
-        self.mode = c.STILL
+        self.mode = STILL
         self.angle: float = 0
         self.relative_pos = Vector2(
-            Grid.PIN_SIZE[0] / 2, Grid.PRICK_DEPTH - Grid.RADIUS
+            Grid.pin_size[0] / 2, Grid.prick_depth - Grid.radius
         )
 
     def set_image(self):
@@ -315,7 +314,7 @@ class Pin(Sprite):
         draw = ImageDraw.Draw(image)
         imgsize = image.size
         size = (450, 1800)
-        w = Grid.MARGINAL_WIDTH * imgsize[0] / Grid.PIN_SIZE[0]
+        w = Grid.marginal_width * imgsize[0] / Grid.pin_size[0]
         xy = (
             w + 125,
             imgsize[1] - 100 - size[0] + w,
@@ -323,14 +322,14 @@ class Pin(Sprite):
             imgsize[1] - 100 - w,
         )
         draw.ellipse(xy, fill=self.color)
-        self.origin_image = pil2pg(image, Grid.PIN_SIZE)
+        self.origin_image = pil2pg(image, Grid.pin_size)
         self.image: Surface = self.origin_image.copy()
 
     def update(self, delta: float, setting=None):
         if setting is not None:
-            if self.mode == c.SHOOT:
+            if self.mode == SHOOT:
                 self.rect.centery -= round(setting.shoot_speed * delta)
-            elif self.mode == c.DROP:
+            elif self.mode == DROP:
                 self.rect.centery += round(setting.drop_speed * delta)
                 self.rect.centerx += round(setting.drop_speed * delta) // 2
 
@@ -347,7 +346,7 @@ class Pie(Sprite):
         self.color = color
         self.set_image(start_degree, degree_range)
         self.angle: float = 0
-        self.relative_pos = (Grid.RADIUS, Grid.RADIUS)
+        self.relative_pos = (Grid.radius, Grid.radius)
 
     def set_image(self, start_degree: float, degree_range: float):
         size = (2200, 2200)
@@ -356,9 +355,9 @@ class Pie(Sprite):
         xy = ((100.0, 100.0), (size[0] - 100, size[1] - 100))
         end = start_degree + degree_range
         draw.pieslice(xy, start_degree, end, fill=self.color, outline=self.color)
-        self.origin_image = pil2pg(image, (2 * Grid.RADIUS, 2 * Grid.RADIUS))
+        self.origin_image = pil2pg(image, (2 * Grid.radius, 2 * Grid.radius))
         self.image: Surface = self.origin_image.copy()
-        self.rect: Rect = self.image.get_rect(center=Grid.CENTER)
+        self.rect: Rect = self.image.get_rect(center=Grid.center)
 
     def draw(self):
         self.screen.blit(self.image, self.rect)
@@ -368,11 +367,11 @@ class Balk(Sprite):
     def __init__(self, screen: Surface, disc: Group, angle: float):
         super().__init__(disc)
         self.screen = screen
-        self.origin_image = get_image("balk.png", Grid.BALK_SIZE)
+        self.origin_image = get_image("balk.png", Grid.balk_size)
         self.image: Surface = self.origin_image.copy()
         self.rect: Rect = self.image.get_rect()
         self.angle = angle
-        self.relative_pos = (Grid.BALK_SIZE[0] // 2, -Grid.BALK_RADIUS)
+        self.relative_pos = (Grid.balk_size[0] // 2, -Grid.balk_radius)
 
     def draw(self):
         self.screen.blit(self.image, self.rect)
@@ -403,15 +402,15 @@ class Bonus(Sprite):
 
 class Heart(Bonus):
     def __init__(self, screen: Surface, disc: Group, angle: float):
-        relative_pos = (Grid.HEART_BONUS_SIZE[0] // 2, -Grid.HEART_BONUS_RADIUS)
+        relative_pos = (Grid.heart_bonus_size[0] // 2, -Grid.heart_bonus_radius)
         super().__init__(screen, disc, angle, relative_pos)
-        image = get_image("heart.png", Grid.HEART_BONUS_SIZE)
+        image = get_image("heart.png", Grid.heart_bonus_size)
         self.set_image(pg.transform.rotozoom(image, 180, 1))
 
 
 class Star(Bonus):
     def __init__(self, screen: Surface, disc: Group, angle: float):
-        relative_pos = (20, -Grid.RADIUS)
+        relative_pos = (20, -Grid.radius)
         super().__init__(screen, disc, angle, relative_pos)
         image = get_image("star.png", (40, 40))
         self.set_image(image)
@@ -489,7 +488,7 @@ class Disc(Group):
         for sprite in self:
             sprite.angle = (sprite.angle + theta) % 360
             sprite.image, sprite.rect = rotate(
-                sprite.origin_image, sprite.angle, Grid.CENTER, sprite.relative_pos
+                sprite.origin_image, sprite.angle, Grid.center, sprite.relative_pos
             )
             if hasattr(sprite, "update"):
                 sprite.update(theta)
@@ -504,7 +503,7 @@ class Bullet(Sprite):
         super().__init__()
         self.screen = screen
         self.color = color
-        self.rect: Rect = Rect(pos[0], pos[1], Grid.BULLET_SIZE[0], Grid.BULLET_SIZE[1])
+        self.rect: Rect = Rect(pos[0], pos[1], Grid.bullet_size[0], Grid.bullet_size[1])
 
     def draw(self):
         pg.draw.rect(self.screen, self.color, self.rect)
