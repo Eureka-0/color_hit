@@ -82,7 +82,7 @@ def rand_num(n: int, fixed_sum: int, upper: bool = True) -> list[int]:
     return num
 
 
-def ordered_colors(level: int) -> list[str]:
+def ordered_colors(level: int, setting) -> list[str]:
     x = random()
     if 0 <= x < (level + 11) / (16 * level):
         num_of_pies = 1
@@ -93,7 +93,7 @@ def ordered_colors(level: int) -> list[str]:
     else:
         num_of_pies = 4
     colors = rand_colors(num_of_pies)
-    num_of_bullets = rand_num(num_of_pies, c.PIN_NUM - randint(0, 4))
+    num_of_bullets = rand_num(num_of_pies, setting.pin_num - randint(0, 4))
     return expand_colors(colors, num_of_bullets)
 
 

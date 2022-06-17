@@ -1,11 +1,15 @@
+from random import randint
+
 from pygame.math import Vector2
 
-
-FPS = 120  # 游戏最高帧率
+FPS = 100  # 游戏最高帧率
 
 
 class Grid:
-    # 组件位置与大小，单位为像素
+    """
+    组件尺寸与布局相关设置，单位均为像素.
+    """
+
     WINDOW_SIZE = Vector2(600, 700)  # 主窗口大小
 
     START_SIZE = Vector2(140, 60)  # 菜单页面开始按钮大小
@@ -62,10 +66,22 @@ PRICK = 3
 DROP = 4
 
 
-# 组件移动速度，平移像素/s，旋转度/s
-ROTATION_SPEED = 120  # 圆盘部分旋转速度
-SHOOT_SPEED = 2500  # 飞镖飞行速度
-DROP_SPEED = 500  # 飞镖掉落速度
+class Setting:
+    """
+    游戏玩法相关设置.
+    """
 
+    shoot_speed = 2500  # 飞镖飞行速度，像素/s
+    drop_speed = 500  # 飞镖掉落速度，像素/s
+    pin_num = 10  # 飞镖总数上限，8 ~ 12
+    init_hp = 2  # 初始生命值
+    highest_hp = 3  # 最高生命值
 
-PIN_NUM = 10  # 两关之后的飞镖总数，8 ~ 12
+    def __init__(self):
+        """
+        存储一些可随着 level 数的改变而改变的设置.
+        """
+        self.rotation_speed = 80  # 圆盘部分旋转速度，度/s
+
+    def change_speed(self):
+        self.rotation_speed = randint(80, 150)

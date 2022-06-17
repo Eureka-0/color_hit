@@ -1,5 +1,5 @@
 import os
-from random import randint, sample
+from random import randint, random, sample
 
 import config as c
 import pygame as pg
@@ -26,6 +26,7 @@ __all__ = [
     "Balk",
     "Bonus",
     "Heart",
+    "Star",
     "Disc",
     "Bullet",
     "OrderedGruop",
@@ -325,12 +326,13 @@ class Pin(Sprite):
         self.origin_image = pil2pg(image, Grid.PIN_SIZE)
         self.image: Surface = self.origin_image.copy()
 
-    def update(self, delta: float):
-        if self.mode == c.SHOOT:
-            self.rect.centery -= round(c.SHOOT_SPEED * delta)
-        elif self.mode == c.DROP:
-            self.rect.centery += round(c.DROP_SPEED * delta)
-            self.rect.centerx += round(c.DROP_SPEED * delta) // 2
+    def update(self, delta: float, setting=None):
+        if setting is not None:
+            if self.mode == c.SHOOT:
+                self.rect.centery -= round(setting.shoot_speed * delta)
+            elif self.mode == c.DROP:
+                self.rect.centery += round(setting.drop_speed * delta)
+                self.rect.centerx += round(setting.drop_speed * delta) // 2
 
     def draw(self):
         self.screen.blit(self.image, self.rect)
@@ -404,7 +406,15 @@ class Heart(Bonus):
         relative_pos = (Grid.HEART_BONUS_SIZE[0] // 2, -Grid.HEART_BONUS_RADIUS)
         super().__init__(screen, disc, angle, relative_pos)
         image = get_image("heart.png", Grid.HEART_BONUS_SIZE)
-        super().set_image(pg.transform.rotozoom(image, 180, 1))
+        self.set_image(pg.transform.rotozoom(image, 180, 1))
+
+
+class Star(Bonus):
+    def __init__(self, screen: Surface, disc: Group, angle: float):
+        relative_pos = (20, -Grid.RADIUS)
+        super().__init__(screen, disc, angle, relative_pos)
+        image = get_image("star.png", (40, 40))
+        self.set_image(image)
 
 
 class Disc(Group):
@@ -417,11 +427,20 @@ class Disc(Group):
         self.add(*self.get_pies_balks(num_of_balks))
 
         num_of_bonus = randint(0, 3)
-        if num_of_bonus:
-            self.hearts = []
-            pos = sample(range(360), num_of_bonus)
-            for p in pos:
-                self.hearts.append(Heart(screen, self, p))
+        self.bonuses = []
+        for _ in range(num_of_bonus):
+            self.add_bonus()
+
+    def add_bonus(self):
+        pos = randint(0, 360)
+        while min_diff(self.prop_pos + [pos]) < 15:
+            pos = randint(0, 360)
+        self.prop_pos.append(pos)
+        x = random()
+        if 0 <= x < 1 / 4:
+            self.bonuses.append(Heart(self.screen, self, pos))
+        else:
+            self.bonuses.append(Star(self.screen, self, pos))
 
     def get_num_of_balks(self, colors: list[str]):
         n = len(self.diff_colors)
@@ -430,7 +449,7 @@ class Disc(Group):
         total_num_of_balks = randint(max(0, upper_of_balks - 4), upper_of_balks)
         num_of_balks = rand_num(n, total_num_of_balks + n, False)
         num_of_balks = [n - 1 for n in num_of_balks]
-        while max(n1 + n2 for n1, n2 in zip(num_of_bullets, num_of_balks)) >= 36 / n:
+        while max(n1 + n2 for n1, n2 in zip(num_of_bullets, num_of_balks)) > 24 / n:
             num_of_balks = rand_num(n, total_num_of_balks + n, False)
             num_of_balks = [n - 1 for n in num_of_balks]
         return num_of_balks
@@ -438,6 +457,7 @@ class Disc(Group):
     def get_pies_balks(self, balks: list[int]) -> list[Union[Pie, Balk]]:
         sector_degree = 360 / len(self.diff_colors)
         pies_balks = []
+        self.prop_pos = []
         for i, color in enumerate(self.diff_colors):
             start_degree = i * sector_degree
             pies_balks.append(Pie(self.screen, color, start_degree, sector_degree))
@@ -449,6 +469,7 @@ class Disc(Group):
                     pos = sample(sample_seq, balks[i])
             for p in pos:
                 pies_balks.append(Balk(self.screen, self, p))
+                self.prop_pos.append(p)
         return pies_balks
 
     def sorted_sprites(self) -> list[Union[Pin, Pie, Bonus]]:
@@ -463,8 +484,8 @@ class Disc(Group):
     def __iter__(self) -> Iterator[Union[Pin, Pie, Bonus]]:
         return iter(self.sorted_sprites())
 
-    def update(self, past_sec: float):
-        theta = c.ROTATION_SPEED * past_sec
+    def update(self, past_sec: float, setting):
+        theta = setting.rotation_speed * past_sec
         for sprite in self:
             sprite.angle = (sprite.angle + theta) % 360
             sprite.image, sprite.rect = rotate(

@@ -2,7 +2,7 @@ from random import randint
 
 import config as c
 import pygame as pg
-from config import Grid
+from config import Grid, Setting
 from pygame.sprite import collide_mask
 
 from src.typing_lib import *
@@ -71,7 +71,7 @@ def group_bullets(screen: Surface, colors: list[str]) -> OrderedGruop:
 
 def group_heart_label(screen: Surface) -> OrderedGruop:
     hearts = OrderedGruop(screen)
-    for i in range(3):
+    for i in range(2):
         pos = (Grid.HEARTS_POS[0], Grid.HEARTS_POS[1] + i * Grid.HEART_SIZE[0])
         hearts.add(Label(screen, pos, Grid.HEART_SIZE, img_name="heart.png"))
     return hearts
@@ -97,6 +97,7 @@ def check_hit(pin: Pin, disc: Disc) -> Union[None, bool, Bonus]:
 class GameView(View):
     def __init__(self, screen: Surface):
         super().__init__(screen)
+        self.setting = Setting()
         self.hearts = group_heart_label(screen)
         self.best_score = read_best_score()
         self.best_score_board = Label(
@@ -134,22 +135,28 @@ class GameView(View):
             self.pause_button.update(img_name="go_on.png")
 
     def init_level(self):
-        self.colors = ordered_colors(self.level)
+        self.setting.change_speed()
+        self.colors = ordered_colors(self.level, self.setting)
         self.pin = Pin(self.screen, self.colors[-1])
         self.disc = Disc(self.screen, self.colors, self.level)
-        if hasattr(self.disc, "hearts"):
-            for heart in self.disc.hearts:
-                heart.set_bonusfunc(self.plus_one_heart)
+        for bonus in self.disc.bonuses:
+            if type(bonus) is Heart:
+                bonus.set_bonusfunc(self.plus_one_heart)
+            elif type(bonus) is Star:
+                bonus.set_bonusfunc(self.plus_score)
         self.bullets = group_bullets(self.screen, self.colors)
         self.colors.pop()
 
     def plus_one_heart(self):
         num = len(self.hearts)
-        if num < 5:
+        if num < 3:
             pos = (Grid.HEARTS_POS[0], Grid.HEARTS_POS[1] + num * Grid.HEART_SIZE[0])
             self.hearts.add(
                 Label(self.screen, pos, Grid.HEART_SIZE, img_name="heart.png")
             )
+
+    def plus_score(self):
+        self.score += randint(10, 15)
 
     def on_keydown(self, event: Event):
         if not self.pause and event.key == pg.K_SPACE and self.pin.mode == c.STILL:
@@ -184,16 +191,16 @@ class GameView(View):
                     if collision is True:
                         self.pin.mode = c.PRICK
                         self.disc.add(self.pin)
-                        self.score += randint(10, 15)
+                        self.plus_score()
                         self.next_pin()
                     elif collision is False:
                         self.pin.mode = c.DROP
                         self.hearts.pop_widget()
-                    elif type(collision) is Heart:
+                    elif isinstance(collision, Bonus):
                         collision.on_hit()
 
-                self.pin.update(past_sec)
-                self.disc.update(past_sec)
+                self.pin.update(past_sec, self.setting)
+                self.disc.update(past_sec, self.setting)
                 self.score_board.update(f"{self.score}")
                 self.hearts.update()
                 self.bullets.update()
