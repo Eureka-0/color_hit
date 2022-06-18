@@ -30,6 +30,10 @@ def get_image(img_name: str, img_size: Union[None, Vect2] = None) -> Surface:
     return pg.transform.smoothscale(image, img_size) if img_size else image
 
 
+def get_path(*args):
+    return os.path.join(getattr(sys, "_MEIPASS", ""), *args)
+
+
 def pil2pg(pilimg: PILImage, size: Vect2) -> Surface:
     raw = pilimg.tobytes("raw", "RGBA")
     imgsize = pilimg.size
@@ -65,7 +69,7 @@ def rand_colors(num: int) -> list[str]:
         shuffle(colors)
         return colors[0:num]
     else:
-        return ["#000000"]
+        return [Color.black]
 
 
 def rand_num(n: int, fixed_sum: int, upper: bool = True) -> list[int]:
@@ -106,21 +110,21 @@ def min_diff(l: list) -> float:
 
 
 def read_best_score() -> int:
-    best_score = os.path.join("data", "best_score.json")
-    if not os.path.exists("data"):
-        os.mkdir("data")
-    if not os.path.exists(best_score):
-        with open(best_score, "w", encoding="utf-8") as f:
+    data_path = get_path("data")
+    best_score_path = get_path("data", "best_score.json")
+    if not os.path.exists(data_path):
+        os.mkdir(data_path)
+    if not os.path.exists(best_score_path):
+        with open(best_score_path, "w", encoding="utf-8") as f:
             json.dump({"best_score": 0}, f, indent=4)
         return 0
-    with open(best_score, "r", encoding="utf-8") as f:
+    with open(best_score_path, "r", encoding="utf-8") as f:
         return json.load(f)["best_score"]
 
 
 def rewrite_best_score(score, best_score):
     if score > best_score:
-        fn = os.path.join("data", "best_score.json")
-        with open(fn, "w", encoding="utf-8") as f:
+        with open(get_path("data", "best_score.json"), "w", encoding="utf-8") as f:
             json.dump({"best_score": score}, f, indent=4)
 
 

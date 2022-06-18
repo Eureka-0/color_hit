@@ -10,6 +10,7 @@ from src.typing_lib import *
 from src.utils import (
     draw_border,
     get_image,
+    get_path,
     is_or_in,
     min_diff,
     pil2pg,
@@ -310,7 +311,7 @@ class Pin(Sprite):
         )
 
     def set_image(self):
-        image = Image.open(os.path.join("img", "pin.png"))
+        image = Image.open(get_path("img", "pin.png"))
         draw = ImageDraw.Draw(image)
         imgsize = image.size
         size = (450, 1800)
