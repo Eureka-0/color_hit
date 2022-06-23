@@ -1,5 +1,5 @@
-from random import randint
 import os
+from random import randint
 
 import pygame as pg
 from config import DROP, PRICK, SHOOT, STILL, Color, Grid, Setting
