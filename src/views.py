@@ -37,16 +37,16 @@ class MenuView(View):
         self.icon_rect = self.icon_img.get_rect(
             centerx=Grid.window_size[0] / 2, centery=200
         )
-        self.start_button = Button(screen, Grid.start_pos, Grid.start_size, "开始")
+        self.start_button = Button(screen, Grid.start_pos, Grid.start_size, "PLAY")
 
         setting_pos = Grid.start_pos + Vector2(0, 90)
-        self.setting_button = Button(screen, setting_pos, Grid.start_size, "设置")
+        self.setting_button = Button(screen, setting_pos, Grid.start_size, "SETTING")
 
         quit_pos = Grid.start_pos + Vector2(0, 180)
-        self.quit_button = Button(screen, quit_pos, Grid.start_size, "退出")
+        self.quit_button = Button(screen, quit_pos, Grid.start_size, "QUIT")
 
         pg.mixer.music.load(os.path.join("sounds", "happy_tune.wav"))
-        pg.mixer.music.set_volume(0.2)
+        pg.mixer.music.set_volume(0.15)
 
     def on_mousedown(self, event: Event):
         if event.button == pg.BUTTON_LEFT:
@@ -107,9 +107,11 @@ class GameView(View):
             screen,
             Grid.best_score_pos,
             Grid.best_score_size,
-            f"历史最高  {self.best_score}",
+            f"BESTSCORE  {self.best_score}",
         )
-        self.best_score_board.set_style(font="FZPSZHUNHJW.TTF", fs=16, fc=Color.aqua)
+        self.best_score_board.set_style(
+            font="TabletGothicBold.OTF", fs=16, fc=Color.aqua
+        )
         self.score = 0
         self.score_board = Label(
             screen, Grid.score_pos, Grid.score_size, f"{self.score}"
@@ -133,7 +135,11 @@ class GameView(View):
         pg.mixer.music.set_volume(0.2)
         self.shoot_sound = pg.mixer.Sound(os.path.join("sounds", "shoot.wav"))
         self.shoot_sound.set_volume(0.2)
-        self.win_sound = pg.mixer.Sound(os.path.join("sounds", "win.wav"))
+        self.hit_sound = pg.mixer.Sound(os.path.join("sounds", "metal_hit.wav"))
+        self.hit_sound.set_volume(0.2)
+        self.bonus_sound = pg.mixer.Sound(os.path.join("sounds", "bonus.wav"))
+        self.bonus_sound.set_volume(0.4)
+        self.win_sound = pg.mixer.Sound(os.path.join("sounds", "level_win.wav"))
         self.win_sound.set_volume(0.4)
 
     def switch_pause(self):
@@ -209,8 +215,10 @@ class GameView(View):
                         self.next_pin()
                     elif collision is False:
                         self.pin.mode = DROP
+                        self.hit_sound.play()
                         self.hearts.pop_widget()
                     elif isinstance(collision, Bonus):
+                        self.bonus_sound.play()
                         collision.on_hit()
 
                 self.pin.update(past_sec, self.setting)

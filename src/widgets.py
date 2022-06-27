@@ -141,8 +141,8 @@ class Button(Sprite):
         ("border_width", "bw"): 0,
         ("border_color", "bc"): Color.light_red,
         ("border_radius", "br"): 0,
-        "font": "FZKATJW.TTF",
-        ("fontsize", "fs"): 36,
+        "font": "ARIALBOLD.TTF",
+        ("fontsize", "fs"): 30,
         ("fontcolor", "fc"): Color.white,
         ("text_align", "ta"): "center",
         ("img_size", "ms"): None,
@@ -168,6 +168,8 @@ class Button(Sprite):
         self.set_style(**kwargs)
         self.hover = False
         self.callback = callback
+        self.press_sound = pg.mixer.Sound(os.path.join("sounds", "button_pressed.wav"))
+        self.press_sound.set_volume(0.4)
 
     def set_style(self, **kwargs):
         self.style.update_values(**kwargs)
@@ -211,6 +213,7 @@ class Button(Sprite):
 
     def check_click(self, event: Event, *args, **kwargs) -> bool:
         if self.check_mouse_pos(event.pos):
+            self.press_sound.play()
             self.callback(*args, **kwargs)
             return True
         else:
@@ -241,7 +244,7 @@ class Label(Sprite):
         ("border_width", "bw"): 0,
         ("border_color", "bc"): Color.light_red,
         ("border_radius", "br"): 0,
-        "font": "FZPSZHUNHJW.TTF",
+        "font": "ARIALREGULAR.TTF",
         ("fontsize", "fs"): 16,
         ("fontcolor", "fc"): Color.white,
         ("text_align", "ta"): "center",

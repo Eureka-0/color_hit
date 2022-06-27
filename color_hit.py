@@ -25,7 +25,7 @@ class Game:
 
         self.init_menu()
         self.background, self.back_rect = get_back()
-        fps_size = pg.math.Vector2(150, 30)
+        fps_size = pg.math.Vector2(135, 30)
         self.current_fps = Label(
             self.screen, Grid.window_size - fps_size, fps_size, "", fs=14, ta="left"
         )
@@ -73,7 +73,7 @@ class Game:
 
         self.frame += 1
         if self.frame % 20 == 0:
-            self.current_fps.update(f"当前帧率(fps): {self.clock.get_fps():.2f}")
+            self.current_fps.update(f"Current FPS: {self.clock.get_fps():.2f}")
         self.current_fps.draw()
         pg.display.update()
 

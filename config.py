@@ -19,7 +19,7 @@ class Grid:
 
     window_size = Vector2(600, 700)  # 主窗口大小
 
-    start_size = Vector2(140, 60)  # 菜单页面开始按钮大小
+    start_size = Vector2(180, 60)  # 菜单页面开始按钮大小
     start_pos = Vector2((window_size[0] - start_size[0]) / 2, 350)  # 菜单页面开始按钮位置
 
     pin_size = Vector2(35, 100)  # 飞镖大小
