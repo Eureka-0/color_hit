@@ -32,12 +32,18 @@ class Game:
         self.frame = 0  # 记录帧数
 
     def init_menu(self):
+        """
+        初始化菜单界面.
+        """
         self.view = MenuView(self.screen)
         self.view.start_button.set_callback(self.init_game)
         self.view.quit_button.set_callback(quit_game)
         pg.mixer.music.play(loops=-1)
 
     def init_game(self):
+        """
+        初始化游戏界面.
+        """
         self.view = GameView(self.screen)
         pg.mixer.music.play(loops=-1)
 

@@ -1,3 +1,7 @@
+"""
+导入及定义一些常用的类型以方便类型注解.
+"""
+
 from typing import Callable, Iterator, Sequence, Union
 
 from PIL.Image import Image as PILImage

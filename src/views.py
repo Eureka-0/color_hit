@@ -81,6 +81,16 @@ def group_heart_label(screen: Surface) -> OrderedGruop:
 
 
 def check_hit(pin: Pin, disc: Disc) -> Union[None, bool, Bonus]:
+    """
+    检测碰撞.
+
+    Args:
+        pin (Pin)
+        disc (Disc)
+
+    Returns:
+        Union[None, bool, Bonus]: 返回 None 表示还未发生碰撞，返回 True 表示发生碰撞且没有掉落，返回 False 表示发生碰撞且掉落，返回 Bonus 对象表示与该实例发生碰撞.
+    """
     collision = None
     for sprite in disc:
         if collide_mask(pin, sprite):
