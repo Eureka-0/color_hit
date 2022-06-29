@@ -42,7 +42,7 @@ conda config --set pip_interop_enabled true
 pip install pyinstaller
 ```
 
-然后打包：
+然后打包(注意在 Windows 上需要先将 pack.spec 中文件路径中的 "/" 修改为 "\\")：
 
 ```shell
 pyinstaller -noconfirm pack.spec
