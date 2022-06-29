@@ -2,9 +2,9 @@ import os
 from random import randint
 
 import pygame as pg
-from config import DROP, PRICK, SHOOT, STILL, Color, Grid, Setting
 from pygame.sprite import collide_mask
 
+from src.config import DROP, PRICK, SHOOT, STILL, Color, Grid, Setting
 from src.typing_lib import *
 from src.utils import get_image, ordered_colors, read_best_score, rewrite_best_score
 from src.widgets import *

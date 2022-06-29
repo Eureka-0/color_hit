@@ -3,9 +3,9 @@ from random import randint, random, sample
 
 import pygame as pg
 import pygame.font as pf
-from config import DROP, SHOOT, STILL, Color, Grid
 from PIL import Image, ImageDraw
 
+from src.config import DROP, SHOOT, STILL, Color, Grid
 from src.typing_lib import *
 from src.utils import (
     draw_border,

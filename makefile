@@ -1,13 +1,10 @@
-.PHONY: setup run build clean
+.PHONY: setup run clean
 
 setup:
 	pip install pillow pygame
 
 run:
 	python color_hit.py
-
-build:
-	pyinstaller -noconfirm pack.spec
 
 clean:
 	rm -rf build

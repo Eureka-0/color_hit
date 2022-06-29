@@ -74,7 +74,7 @@ class Setting:
     游戏玩法相关设置.
     """
 
-    shoot_speed = 2500  # 飞镖飞行速度，像素/s
+    shoot_speed = 3000  # 飞镖飞行速度，像素/s
     drop_speed = 500  # 飞镖掉落速度，像素/s
     pin_num = 10  # 飞镖总数上限，8 ~ 12
     init_hp = 2  # 初始生命值

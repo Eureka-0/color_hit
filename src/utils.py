@@ -6,8 +6,8 @@ from math import cos, radians, sin
 from random import randint, random, sample, shuffle
 
 import pygame as pg
-from config import Color, Grid
 
+from src.config import Color, Grid
 from src.typing_lib import *
 
 

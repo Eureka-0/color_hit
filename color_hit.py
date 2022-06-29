@@ -6,7 +6,7 @@ import pygame as pg
 from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import get as get_events
 
-from config import Grid, FPS
+from src.config import Grid, FPS
 from src.utils import get_back, get_image, quit_game, rewrite_best_score
 from src.views import GameView, Label, MenuView
 
