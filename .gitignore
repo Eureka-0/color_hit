@@ -148,3 +148,4 @@ cython_debug/
 .vscode/
 data/
 *.mp3
+*.zip
