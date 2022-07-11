@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from functools import reduce
+from itertools import chain
 from math import cos, radians, sin
 from random import randint, random, sample, shuffle
 
@@ -137,7 +138,7 @@ def expand_colors(colors: list[str], num: list[int]) -> list[str]:
     Returns:
         list[str]: 扩展并打乱后的颜色列表.
     """
-    expand = reduce(list.__add__, [[color] * n for color, n in zip(colors, num)])
+    expand = list(chain.from_iterable([color] * n for color, n in zip(colors, num)))
     shuffle(expand)
     return expand
 
