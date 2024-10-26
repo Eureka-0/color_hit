@@ -1,15 +1,14 @@
 import json
 import os
 import sys
-from functools import reduce
 from itertools import chain
 from math import cos, radians, sin
 from random import randint, random, sample, shuffle
 
 import pygame as pg
 
-from src.config import Color, Grid
-from src.typing_lib import *
+from config import Color, Grid
+from typing_lib import *
 
 
 def is_or_in(k: str, key: Union[str, tuple[str, str]]) -> bool:

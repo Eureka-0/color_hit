@@ -1,0 +1,15 @@
+[project]
+name = "color-hit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["pillow>=11.0.0", "pygame>=2.6.1"]
+
+
+[project.gui-scripts]
+color-hit = "color_hit:main"
+
+
+[tool.uv]
+package = true

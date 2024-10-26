@@ -149,3 +149,6 @@ cython_debug/
 data/
 *.mp3
 *.zip
+.python-version
+uv.lock
+set_tcl_env.sh

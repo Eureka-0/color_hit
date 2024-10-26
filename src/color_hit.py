@@ -6,9 +6,9 @@ import pygame as pg
 from pygame import KEYDOWN, MOUSEBUTTONDOWN, QUIT
 from pygame.event import get as get_events
 
-from src.config import Grid, FPS
-from src.utils import get_back, get_image, quit_game, rewrite_best_score
-from src.views import GameView, Label, MenuView
+from config import FPS, Grid
+from utils import get_back, get_image, quit_game, rewrite_best_score
+from views import GameView, Label, MenuView
 
 
 class Game:
@@ -84,7 +84,11 @@ class Game:
         pg.display.update()
 
 
-if __name__ == "__main__":
+def main():
     game = Game()
     while True:
         game.update_frame()
+
+
+if __name__ == "__main__":
+    main()

@@ -4,21 +4,19 @@ from random import randint
 import pygame as pg
 from pygame.sprite import collide_mask
 
-from src.config import DROP, PRICK, SHOOT, STILL, Color, Grid, Setting
-from src.typing_lib import *
-from src.utils import get_image, ordered_colors, read_best_score, rewrite_best_score
-from src.widgets import *
+from config import DROP, PRICK, SHOOT, STILL, Color, Grid, Setting
+from typing_lib import *
+from utils import get_image, ordered_colors, read_best_score, rewrite_best_score
+from widgets import *
 
 
 class View:
     def __init__(self, screen: Surface):
         self.screen = screen
 
-    def on_keydown(self, event: Event):
-        ...
+    def on_keydown(self, event: Event): ...
 
-    def on_mousedown(self, event: Event):
-        ...
+    def on_mousedown(self, event: Event): ...
 
     def get_widgets(self) -> Iterator[Union[Sprite, Group]]:
         for v in self.__dict__.values():

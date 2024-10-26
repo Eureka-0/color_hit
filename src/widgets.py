@@ -5,9 +5,9 @@ import pygame as pg
 import pygame.font as pf
 from PIL import Image, ImageDraw
 
-from src.config import DROP, SHOOT, STILL, Color, Grid
-from src.typing_lib import *
-from src.utils import (
+from config import DROP, SHOOT, STILL, Color, Grid
+from typing_lib import *
+from utils import (
     draw_border,
     get_image,
     get_path,
